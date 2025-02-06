@@ -74,6 +74,29 @@
       white-space: pre-wrap;
       border-radius: 4px;
     }
+
+    /* Optional: styling for saved reports list */
+    #savedReportsList {
+      margin-top: 20px;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    #savedReportsList h4 {
+      margin-bottom: 10px;
+    }
+    .saved-report-item {
+      background: #f9f9f9;
+      margin: 5px 0;
+      padding: 5px 10px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .saved-report-item button {
+      margin-left: 10px;
+    }
   </style>
 </head>
 <body>
@@ -124,7 +147,7 @@
         </div>
         <div class="form-group">
           <label for="communalAreas">Communal Areas:</label>
-          <textarea id="communalAreas" placeholder="Describe communal areas: Entryphone / Stairwell/ Stonework/roof /gutters. Safe locks front and back? Access to all areas (bin areas/garden etc)? Any fire hazards/obstructions? Lighting OK?"></textarea>
+          <textarea id="communalAreas" placeholder="Describe communal areas..."></textarea>
         </div>
         <div class="form-group">
           <input type="checkbox" id="communalAreasPhotos">
@@ -138,12 +161,12 @@
       <h3>Windows & Doors</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="windowsDoors">Type / Condition / Do they all open? / Do they need painting?</label>
+          <label for="windowsDoors">Type/Condition/Do they open? Need painting?</label>
           <textarea id="windowsDoors"></textarea>
         </div>
         <div class="form-group">
           <input type="checkbox" id="windowsDoorsPhotos">
-          <label for="windowsDoorsPhotos">Photos Taken for Windows & Doors?</label>
+          <label for="windowsDoorsPhotos">Photos Taken?</label>
         </div>
       </div>
     </div>
@@ -153,12 +176,12 @@
       <h3>General Decoration</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="generalDecoration">Is it tired? Does the Landlord need to repaint or re-carpet in the next 12/18 months?</label>
+          <label for="generalDecoration">Is it tired? Repaint or re-carpet soon?</label>
           <textarea id="generalDecoration"></textarea>
         </div>
         <div class="form-group">
           <input type="checkbox" id="generalDecorationPhotos">
-          <label for="generalDecorationPhotos">Photos Taken for General Decoration?</label>
+          <label for="generalDecorationPhotos">Photos Taken?</label>
         </div>
       </div>
     </div>
@@ -168,12 +191,12 @@
       <h3>General Cleanliness</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="generalCleanliness">Pets? / Smoking? / Extra Occupants? / Issues?</label>
+          <label for="generalCleanliness">Pets? Smoking? Extra Occupants?</label>
           <textarea id="generalCleanliness"></textarea>
         </div>
         <div class="form-group">
           <input type="checkbox" id="generalCleanlinessPhotos">
-          <label for="generalCleanlinessPhotos">Photos Taken for General Cleanliness?</label>
+          <label for="generalCleanlinessPhotos">Photos Taken?</label>
         </div>
       </div>
     </div>
@@ -183,12 +206,12 @@
       <h3>Furniture</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="furniture">Detail condition / Wear & Tear / Fire Safety</label>
+          <label for="furniture">Condition/Wear & Tear/Fire Safety</label>
           <textarea id="furniture"></textarea>
         </div>
         <div class="form-group">
           <input type="checkbox" id="furniturePhotos">
-          <label for="furniturePhotos">Photos Taken for Furniture?</label>
+          <label for="furniturePhotos">Photos Taken?</label>
         </div>
       </div>
     </div>
@@ -204,7 +227,7 @@
         </div>
         <div class="form-group">
           <input type="checkbox" id="blindsPhotos">
-          <label for="blindsPhotos">Photos Taken for Blinds?</label>
+          <label for="blindsPhotos">Photos Taken?</label>
         </div>
       </div>
     </div>
@@ -225,7 +248,7 @@
       <h3>Kitchen</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="kitchenExtractor">Check Extractor & Seals</label>
+          <label for="kitchenExtractor">Extractor & Seals</label>
           <textarea id="kitchenExtractor"></textarea>
         </div>
       </div>
@@ -236,16 +259,16 @@
       <h3>Bathroom & Ensuite</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="bathroom">Check Shower Heads & Seals for Bathroom</label>
+          <label for="bathroom">Check Shower Heads/Seals (Bathroom)</label>
           <textarea id="bathroom"></textarea>
         </div>
         <div class="form-group">
-          <label for="ensuite">Check Shower Heads & Seals for Ensuite</label>
+          <label for="ensuite">Check Shower Heads/Seals (Ensuite)</label>
           <textarea id="ensuite"></textarea>
         </div>
         <div class="form-group">
           <input type="checkbox" id="bathroomPhotos">
-          <label for="bathroomPhotos">Photos Taken for Bathroom/Ensuite?</label>
+          <label for="bathroomPhotos">Photos Taken?</label>
         </div>
       </div>
     </div>
@@ -282,12 +305,12 @@
       <h3>Garden</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="garden">Adequately maintained for time of year? Grass Cut? Trees or Hedges Trimmed? Gutters/Downpipes Clear?</label>
+          <label for="garden">Adequately Maintained?</label>
           <textarea id="garden"></textarea>
         </div>
         <div class="form-group">
           <input type="checkbox" id="gardenPhotos">
-          <label for="gardenPhotos">Photos Taken for Garden?</label>
+          <label for="gardenPhotos">Photos Taken?</label>
         </div>
       </div>
     </div>
@@ -316,7 +339,7 @@
           <input type="text" id="repairingOtherFuel">
         </div>
         <div class="form-group">
-          <label>300mm or more space between cooker & sink?</label>
+          <label>300mm or more between cooker & sink?</label>
           <label><input type="radio" name="repairingCookerSink" value="Yes"> Yes</label>
           <label><input type="radio" name="repairingCookerSink" value="No"> No</label>
         </div>
@@ -333,7 +356,7 @@
       <h3>HMO</h3>
       <div class="section-content">
         <div class="form-group">
-          <label for="hmo">Check all smoke alarms and HMO notice board</label>
+          <label for="hmo">Check all smoke alarms, HMO notice board, etc.</label>
           <textarea id="hmo"></textarea>
         </div>
       </div>
@@ -349,34 +372,43 @@
   <!-- Report Display -->
   <pre id="reportOutput"></pre>
 
+  <!-- Optional: List of Past Saved Reports -->
+  <div id="savedReportsList">
+    <h4>Saved Reports (max 10):</h4>
+    <div id="reportsContainer"></div>
+  </div>
+
   <script>
     // ==================
     // 1) ACCORDION / TOGGLE SECTIONS
     // ==================
-    document.querySelectorAll('.section h3').forEach(function(header) {
-      header.addEventListener('click', function() {
+    document.querySelectorAll(".section h3").forEach(function(header) {
+      header.addEventListener("click", function() {
         const content = this.nextElementSibling;
-        content.classList.toggle('active');
+        content.classList.toggle("active");
       });
     });
 
     // ==================
-    // 2) GENERATE REPORT FUNCTION
+    // 2) HELPER FUNCTIONS FOR REPORT GENERATION
     // ==================
-    function generateReport() {
-      let report = "PROPERTY INSPECTION REPORT\n";
-      report += "=".repeat(40) + "\n\n";
+    function getVal(id) {
+      return document.getElementById(id).value.trim();
+    }
+    function getCheckbox(id) {
+      return document.getElementById(id).checked ? "Yes" : "No";
+    }
+    function getRadio(name) {
+      const radios = document.getElementsByName(name);
+      for (let radio of radios) {
+        if (radio.checked) return radio.value;
+      }
+      return "";
+    }
 
-      // Helper functions
-      const getVal = (id) => document.getElementById(id).value;
-      const getCheckbox = (id) => document.getElementById(id).checked ? "Yes" : "No";
-      const getRadio = (name) => {
-        const radios = document.getElementsByName(name);
-        for (let radio of radios) {
-          if (radio.checked) return radio.value;
-        }
-        return "";
-      };
+    // Builds the text of the report from form fields
+    function buildReport() {
+      let report = "PROPERTY INSPECTION REPORT\n" + "=".repeat(40) + "\n\n";
 
       // Section 1: General Property Info
       report += ">>> General Property Info:\n";
@@ -387,7 +419,7 @@
       report += "Type: " + getVal("propertyType") + "\n";
       report += "Key No: " + getVal("keyNo") + "\n";
       report += "Alarm Code: " + getVal("alarmCode") + "\n";
-      report += "Tenants' Phone Numbers: " + getVal("tenantsPhone") + "\n";
+      report += "Tenants' Phone: " + getVal("tenantsPhone") + "\n";
       report += "Property Locked on Entry: " + getVal("propertyLocked") + "\n";
       report += "Communal Areas: " + getVal("communalAreas") + "\n";
       report += "Communal Areas Photos Taken: " + getCheckbox("communalAreasPhotos") + "\n\n";
@@ -414,7 +446,7 @@
 
       // Section 6: Blinds
       report += ">>> Blinds:\n";
-      report += "Do all Blinds have Tension Clips: " + getRadio("blinds") + "\n";
+      report += "Tension Clips: " + getRadio("blinds") + "\n";
       report += "Photos Taken: " + getCheckbox("blindsPhotos") + "\n\n";
 
       // Section 7: Dampness & Seals
@@ -458,53 +490,138 @@
 
       report += "=".repeat(40) + "\n";
       report += "End of Report.";
+
       return report;
     }
 
     // ==================
-    // 3) GENERATE & DOWNLOAD REPORT
+    // 3) GENERATE & DOWNLOAD REPORT BUTTONS
     // ==================
-    document.getElementById("generateBtn").addEventListener("click", function() {
-      const reportText = generateReport();
-      document.getElementById("reportOutput").textContent = reportText;
-      document.getElementById("downloadBtn").disabled = false;
+    const generateBtn = document.getElementById("generateBtn");
+    const downloadBtn = document.getElementById("downloadBtn");
+    const reportOutput = document.getElementById("reportOutput");
+
+    generateBtn.addEventListener("click", function() {
+      const reportText = buildReport();
+      reportOutput.textContent = reportText;
+      downloadBtn.disabled = false;
+
+      // Also save this report into localStorage as "savedReports" (an array)
+      saveReportToLocalStorage(reportText);
+      // Refresh the saved reports list in UI
+      displaySavedReports();
     });
 
-    document.getElementById("downloadBtn").addEventListener("click", function() {
-      const reportText = document.getElementById("reportOutput").textContent;
+    downloadBtn.addEventListener("click", function() {
+      const reportText = reportOutput.textContent;
       const blob = new Blob([reportText], { type: "text/plain" });
       const url = window.URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
+      // By default, name it as "inspection_report.txt"
       a.download = "inspection_report.txt";
       a.click();
       window.URL.revokeObjectURL(url);
     });
 
     // ==================
-    // 4) SAVE/RESTORE FORM DATA USING localStorage
+    // 4) SAVING MULTIPLE REPORTS (MAX 10) IN LOCALSTORAGE
+    // ==================
+    function saveReportToLocalStorage(reportText) {
+      // We'll name it by "PropertyAddress-Timestamp"
+      const propertyName = getVal("propertyAddress") || "UnnamedProperty";
+      const timeStamp = new Date().toISOString();
+
+      // Build an object to store
+      const newReport = {
+        property: propertyName,
+        content: reportText,
+        date: timeStamp
+      };
+
+      // Retrieve existing array of reports (if any)
+      let savedReports = JSON.parse(localStorage.getItem("savedReports")) || [];
+
+      // Add new report to the front
+      savedReports.unshift(newReport);
+
+      // Keep only top 10
+      if (savedReports.length > 10) {
+        savedReports.pop(); // remove oldest (end)
+      }
+
+      // Store back
+      localStorage.setItem("savedReports", JSON.stringify(savedReports));
+    }
+
+    // ==================
+    // 5) DISPLAYING SAVED REPORTS & DOWNLOADING THEM
+    // ==================
+    function displaySavedReports() {
+      const reportsContainer = document.getElementById("reportsContainer");
+      reportsContainer.innerHTML = ""; // clear existing
+
+      const savedReports = JSON.parse(localStorage.getItem("savedReports")) || [];
+      if (!savedReports.length) {
+        reportsContainer.innerHTML = "<p>No reports saved yet.</p>";
+        return;
+      }
+
+      savedReports.forEach((reportObj, index) => {
+        const itemDiv = document.createElement("div");
+        itemDiv.className = "saved-report-item";
+
+        // Basic info: property name + date
+        const info = document.createElement("span");
+        info.textContent = `${reportObj.property} (${reportObj.date.slice(0, 19).replace('T', ' ')})`;
+
+        // Download button
+        const dlBtn = document.createElement("button");
+        dlBtn.textContent = "Download";
+        dlBtn.addEventListener("click", () => {
+          downloadSavedReport(reportObj);
+        });
+
+        // Append them together
+        itemDiv.appendChild(info);
+        itemDiv.appendChild(dlBtn);
+
+        reportsContainer.appendChild(itemDiv);
+      });
+    }
+
+    function downloadSavedReport(reportObj) {
+      // Use the property name (plus date) as a filename or something similar
+      const fileName = `${reportObj.property.replace(/\s+/g, '_')}_${reportObj.date.slice(0, 10)}.txt`;
+      const blob = new Blob([reportObj.content], { type: "text/plain" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = fileName;
+      a.click();
+      window.URL.revokeObjectURL(url);
+    }
+
+    // ==================
+    // 6) RESTORE FORM FIELDS ON PAGE LOAD
     // ==================
     document.addEventListener("DOMContentLoaded", function() {
       const inputs = document.querySelectorAll("input, textarea, select");
 
-      // Restore data from localStorage
+      // Restore data from localStorage for each field
       inputs.forEach(input => {
-        // For radio buttons, we store data by `name`
         if (input.type === "radio") {
+          // For radio, we store selected value by name
           const savedRadioVal = localStorage.getItem(input.name);
           if (savedRadioVal === input.value) {
             input.checked = true;
           }
-        }
-        // For checkboxes, restore checked = true/false
-        else if (input.type === "checkbox") {
+        } else if (input.type === "checkbox") {
           const savedValue = localStorage.getItem(input.id);
           if (savedValue) {
             input.checked = (savedValue === "true");
           }
-        }
-        // For others (text, textarea, select), restore the string value
-        else {
+        } else {
           const savedValue = localStorage.getItem(input.id);
           if (savedValue) {
             input.value = savedValue;
@@ -512,11 +629,10 @@
         }
       });
 
-      // On change, save data to localStorage
+      // On change, save to localStorage
       inputs.forEach(input => {
         input.addEventListener("change", function() {
           if (input.type === "radio") {
-            // Only save the value of the checked radio
             if (input.checked) {
               localStorage.setItem(input.name, input.value);
             }
@@ -527,6 +643,9 @@
           }
         });
       });
+
+      // Finally, display the saved reports once on load
+      displaySavedReports();
     });
   </script>
 </body>
