@@ -350,7 +350,9 @@
   <pre id="reportOutput"></pre>
 
   <script>
-    // Toggle sections (accordion behavior)
+    // ==================
+    // 1) ACCORDION / TOGGLE SECTIONS
+    // ==================
     document.querySelectorAll('.section h3').forEach(function(header) {
       header.addEventListener('click', function() {
         const content = this.nextElementSibling;
@@ -358,7 +360,9 @@
       });
     });
 
-    // Function to generate the report text based on form values
+    // ==================
+    // 2) GENERATE REPORT FUNCTION
+    // ==================
     function generateReport() {
       let report = "PROPERTY INSPECTION REPORT\n";
       report += "=".repeat(40) + "\n\n";
@@ -457,14 +461,15 @@
       return report;
     }
 
-    // Event listener for Generate Report button
+    // ==================
+    // 3) GENERATE & DOWNLOAD REPORT
+    // ==================
     document.getElementById("generateBtn").addEventListener("click", function() {
       const reportText = generateReport();
       document.getElementById("reportOutput").textContent = reportText;
       document.getElementById("downloadBtn").disabled = false;
     });
 
-    // Event listener for Download Report button
     document.getElementById("downloadBtn").addEventListener("click", function() {
       const reportText = document.getElementById("reportOutput").textContent;
       const blob = new Blob([reportText], { type: "text/plain" });
@@ -474,6 +479,54 @@
       a.download = "inspection_report.txt";
       a.click();
       window.URL.revokeObjectURL(url);
+    });
+
+    // ==================
+    // 4) SAVE/RESTORE FORM DATA USING localStorage
+    // ==================
+    document.addEventListener("DOMContentLoaded", function() {
+      const inputs = document.querySelectorAll("input, textarea, select");
+
+      // Restore data from localStorage
+      inputs.forEach(input => {
+        // For radio buttons, we store data by `name`
+        if (input.type === "radio") {
+          const savedRadioVal = localStorage.getItem(input.name);
+          if (savedRadioVal === input.value) {
+            input.checked = true;
+          }
+        }
+        // For checkboxes, restore checked = true/false
+        else if (input.type === "checkbox") {
+          const savedValue = localStorage.getItem(input.id);
+          if (savedValue) {
+            input.checked = (savedValue === "true");
+          }
+        }
+        // For others (text, textarea, select), restore the string value
+        else {
+          const savedValue = localStorage.getItem(input.id);
+          if (savedValue) {
+            input.value = savedValue;
+          }
+        }
+      });
+
+      // On change, save data to localStorage
+      inputs.forEach(input => {
+        input.addEventListener("change", function() {
+          if (input.type === "radio") {
+            // Only save the value of the checked radio
+            if (input.checked) {
+              localStorage.setItem(input.name, input.value);
+            }
+          } else if (input.type === "checkbox") {
+            localStorage.setItem(input.id, input.checked);
+          } else {
+            localStorage.setItem(input.id, input.value);
+          }
+        });
+      });
     });
   </script>
 </body>
