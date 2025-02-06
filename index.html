@@ -12,26 +12,45 @@
       margin: 0;
       padding: 20px;
     }
-    h2 {
-      text-align: center;
-      color: #333;
-      margin-bottom: 20px;
-    }
     .container {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       background: #fff;
       padding: 20px;
       border-radius: 6px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
     }
-    /* Section (Card) Styles */
+    h2 {
+      text-align: center;
+      margin-top: 0;
+      color: #333;
+    }
+
+    /* "Paste addresses" card at the top */
+    #pasteAddressesSection {
+      border: 1px solid #ccc;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 20px;
+      background: #fff;
+    }
+    #pasteAddressesSection h3 {
+      margin-top: 0;
+      color: #007BFF;
+    }
+    textarea {
+      width: 100%;
+      resize: vertical;
+      padding: 8px;
+    }
+
+    /* Sections (accordion cards) */
     .section {
       margin-bottom: 20px;
       border: 1px solid #ddd;
       border-radius: 4px;
-      overflow: hidden;
       background: #fff;
+      overflow: hidden;
     }
     .section h3 {
       background: #007BFF;
@@ -40,11 +59,12 @@
       padding: 10px 15px;
       cursor: pointer;
       user-select: none;
+      font-size: 16px;
     }
     .section-content {
       padding: 15px;
       display: none;
-      animation: fadeIn 0.3s;
+      animation: fadeIn 0.3s ease;
     }
     .section-content.active {
       display: block;
@@ -53,7 +73,8 @@
       from { opacity: 0; }
       to { opacity: 1; }
     }
-    /* Form Elements */
+
+    /* Form elements */
     .form-group {
       margin-bottom: 15px;
     }
@@ -65,16 +86,17 @@
     }
     input[type="text"],
     input[type="date"],
-    textarea,
-    select {
+    select,
+    textarea {
       width: 100%;
       padding: 8px;
+      box-sizing: border-box;
       border: 1px solid #ccc;
       border-radius: 4px;
-      box-sizing: border-box;
     }
-    textarea {
-      resize: vertical;
+    input[type="checkbox"],
+    input[type="radio"] {
+      margin-right: 5px;
     }
     .btn {
       background: #007BFF;
@@ -95,8 +117,34 @@
       border-radius: 4px;
       white-space: pre-wrap;
     }
-    /* Image Preview Styles */
-    .preview-container img {
+
+    /* Saved Reports List */
+    #savedReportsList {
+      margin-top: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      padding: 15px;
+      background: #fff;
+    }
+    #savedReportsList h4 {
+      margin-top: 0;
+    }
+    .saved-report-item {
+      background: #f9f9f9;
+      padding: 8px;
+      border-radius: 4px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+    .saved-report-item span {
+      font-size: 14px;
+      color: #333;
+    }
+
+    /* Example Image Preview Container */
+    #windowsDoorsPhotoPreview img {
       width: 100px;
       margin-right: 5px;
       margin-bottom: 5px;
@@ -106,10 +154,87 @@
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>Property Inspection Report Generator</h2>
 
-    <!-- Example Section: Windows & Doors -->
+<div class="container">
+  <h2>Property Inspection Report Form</h2>
+
+  <!-- 1) PASTE ADDRESSES + LOAD INTO DROPDOWN -->
+  <div id="pasteAddressesSection">
+    <h3>Paste Property Addresses</h3>
+    <div>
+      <label>Paste addresses (one per line):</label>
+      <textarea id="addressesInput" rows="5" placeholder="123 Main St
+456 Another Ave
+789 Example Road"></textarea>
+      <button class="btn" id="loadAddressesBtn">Load Addresses into Dropdown</button>
+    </div>
+
+    <div style="margin-top:10px;">
+      <label for="propertySelect">Select a Property to Edit:</label>
+      <select id="propertySelect">
+        <option value="">-- Select Property --</option>
+        <!-- Options populated by code -->
+      </select>
+    </div>
+  </div>
+
+  <!-- 2) FULL INSPECTION FORM -->
+  <form id="inspectionForm">
+    <!-- Section 1: General Property Info -->
+    <div class="section">
+      <h3>General Property Info</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="propertyAddress">Property Address:</label>
+          <input type="text" id="propertyAddress" placeholder="Enter Property Address">
+        </div>
+        <div class="form-group">
+          <label for="tenants">Tenants:</label>
+          <input type="text" id="tenants" placeholder="Enter Tenants' Names">
+        </div>
+        <div class="form-group">
+          <label for="arrearsBalance">Arrears Balance:</label>
+          <input type="text" id="arrearsBalance" placeholder="Enter Arrears Balance">
+        </div>
+        <div class="form-group">
+          <label for="tenancyStartDate">Tenancy Start Date:</label>
+          <input type="date" id="tenancyStartDate">
+        </div>
+        <div class="form-group">
+          <label for="propertyType">Type:</label>
+          <select id="propertyType">
+            <option value="Furnished">Furnished</option>
+            <option value="Unfurnished">Unfurnished</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="keyNo">Key No:</label>
+          <input type="text" id="keyNo" placeholder="Enter Key Number">
+        </div>
+        <div class="form-group">
+          <label for="alarmCode">Alarm Code:</label>
+          <input type="text" id="alarmCode" placeholder="Enter Alarm Code">
+        </div>
+        <div class="form-group">
+          <label for="tenantsPhone">Tenants' Phone Numbers:</label>
+          <input type="text" id="tenantsPhone" placeholder="Enter Phone Numbers">
+        </div>
+        <div class="form-group">
+          <label for="propertyLocked">How is the Property Locked on Entry?</label>
+          <input type="text" id="propertyLocked" placeholder="e.g., Main door with digital lock">
+        </div>
+        <div class="form-group">
+          <label for="communalAreas">Communal Areas:</label>
+          <textarea id="communalAreas" placeholder="Describe communal areas..."></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="communalAreasPhotos">
+          <label for="communalAreasPhotos">Photos Taken for Communal Areas?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Windows & Doors -->
     <div class="section">
       <h3>Windows & Doors</h3>
       <div class="section-content">
@@ -132,11 +257,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload with Preview -->
+        <!-- Photo Upload Field & Preview Area -->
         <div class="form-group">
           <label for="windowsDoorsPhotoInput">Upload/Take Photos for Windows & Doors</label>
-          <input type="file" id="windowsDoorsPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="windowsDoorsPhotoPreview"></div>
+          <input
+            type="file"
+            id="windowsDoorsPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="windowsDoorsPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -164,11 +295,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="generalDecorationPhotoInput">Upload/Take Photos for General Decoration</label>
-          <input type="file" id="generalDecorationPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="generalDecorationPhotoPreview"></div>
+          <input
+            type="file"
+            id="generalDecorationPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="generalDecorationPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -196,11 +333,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="generalCleanlinessPhotoInput">Upload/Take Photos for General Cleanliness</label>
-          <input type="file" id="generalCleanlinessPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="generalCleanlinessPhotoPreview"></div>
+          <input
+            type="file"
+            id="generalCleanlinessPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="generalCleanlinessPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -228,11 +371,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="furniturePhotoInput">Upload/Take Photos for Furniture</label>
-          <input type="file" id="furniturePhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="furniturePhotoPreview"></div>
+          <input
+            type="file"
+            id="furniturePhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="furniturePhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -261,11 +410,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="blindsPhotoInput">Upload/Take Photos for Blinds</label>
-          <input type="file" id="blindsPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="blindsPhotoPreview"></div>
+          <input
+            type="file"
+            id="blindsPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="blindsPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -289,11 +444,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="dampnessSealsPhotoInput">Upload/Take Photos for Dampness & Seals</label>
-          <input type="file" id="dampnessSealsPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="dampnessSealsPhotoPreview"></div>
+          <input
+            type="file"
+            id="dampnessSealsPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="dampnessSealsPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -317,11 +478,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="kitchenExtractorPhotoInput">Upload/Take Photos for Kitchen</label>
-          <input type="file" id="kitchenExtractorPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="kitchenExtractorPhotoPreview"></div>
+          <input
+            type="file"
+            id="kitchenExtractorPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="kitchenExtractorPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -353,11 +520,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="bathroomPhotoInput">Upload/Take Photos for Bathroom & Ensuite</label>
-          <input type="file" id="bathroomPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="bathroomPhotoPreview"></div>
+          <input
+            type="file"
+            id="bathroomPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="bathroomPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -397,11 +570,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="smokeAlarmsPhotoInput">Upload/Take Photos for Smoke Alarms</label>
-          <input type="file" id="smokeAlarmsPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="smokeAlarmsPhotoPreview"></div>
+          <input
+            type="file"
+            id="smokeAlarmsPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="smokeAlarmsPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -429,11 +608,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="gardenPhotoInput">Upload/Take Photos for Garden</label>
-          <input type="file" id="gardenPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="gardenPhotoPreview"></div>
+          <input
+            type="file"
+            id="gardenPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="gardenPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -482,11 +667,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="repairingStandardPhotoInput">Upload/Take Photos for Repairing Standard</label>
-          <input type="file" id="repairingStandardPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="repairingStandardPhotoPreview"></div>
+          <input
+            type="file"
+            id="repairingStandardPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="repairingStandardPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -510,11 +701,17 @@
             <option value="poor">Poor</option>
           </select>
         </div>
-        <!-- Photo Upload -->
+        <!-- Photo Upload & Preview -->
         <div class="form-group">
           <label for="hmoPhotoInput">Upload/Take Photos for HMO</label>
-          <input type="file" id="hmoPhotoInput" accept="image/*" capture="camera" multiple>
-          <div class="preview-container" id="hmoPhotoPreview"></div>
+          <input
+            type="file"
+            id="hmoPhotoInput"
+            accept="image/*"
+            capture="camera"
+            multiple
+          >
+          <div id="hmoPhotoPreview"></div>
         </div>
       </div>
     </div>
@@ -534,315 +731,387 @@
     <h4>Saved Reports (max 10):</h4>
     <div id="reportsContainer"></div>
   </div>
-  <!-- JavaScript -->
-  <script>
-    // ========================================================
-    // Accordion Toggle for Sections
-    document.querySelectorAll(".section h3").forEach(header => {
-      header.addEventListener("click", function() {
-        const content = this.nextElementSibling;
-        content.classList.toggle("active");
-      });
-    });
+</div> <!-- end container -->
 
-    // ========================================================
-    // Sample Image Preview Code for Windows & Doors
-    const windowsDoorsPhotoInput = document.getElementById("windowsDoorsPhotoInput");
-    const windowsDoorsPhotoPreview = document.getElementById("windowsDoorsPhotoPreview");
+<script>
+// ========================================================
+// A) STORING/LOADING PROPERTY DATA (FOR FORM FIELDS)
+// ========================================================
 
-    windowsDoorsPhotoInput.addEventListener("change", function() {
-      const files = this.files;
-      windowsDoorsPhotoPreview.innerHTML = "";
-      for (let i = 0; i < files.length; i++) {
-        const file = files[i];
-        const reader = new FileReader();
-        reader.onload = function(e) {
-          const img = document.createElement("img");
-          img.src = e.target.result;
-          windowsDoorsPhotoPreview.appendChild(img);
-        };
-        reader.readAsDataURL(file);
-      }
-    });
+function loadAllProperties() {
+  const data = localStorage.getItem("propertyData");
+  return data ? JSON.parse(data) : {};
+}
+function saveAllProperties(obj) {
+  localStorage.setItem("propertyData", JSON.stringify(obj));
+}
+function loadPropertyData(propertyName) {
+  const allProps = loadAllProperties();
+  return allProps[propertyName] || {};
+}
+function savePropertyData(propertyName, dataObj) {
+  const allProps = loadAllProperties();
+  allProps[propertyName] = dataObj;
+  saveAllProperties(allProps);
+}
 
-    // ========================================================
-    // Report Generation (Incorporates Quality Selectors)
-    function buildReport() {
-      let report = "PROPERTY INSPECTION REPORT\n" + "=".repeat(40) + "\n\n";
-      
-      // Windows & Doors
-      const windowsDoorsText = document.getElementById("windowsDoors").value.trim();
-      const windowsDoorsQuality = document.getElementById("windowsDoorsQuality").value;
-      report += ">>> Windows & Doors:\n";
-      report += "Details: " + windowsDoorsText + "\n";
-      if (windowsDoorsQuality === "excellent") {
-        report += "The windows and doors are in excellent condition, requiring minimal attention.\n";
-      } else if (windowsDoorsQuality === "good") {
-        report += "The windows and doors are in good condition but may benefit from minor maintenance.\n";
-      } else if (windowsDoorsQuality === "average") {
-        report += "The windows and doors are in average condition and might need repairs in the near future.\n";
-      } else if (windowsDoorsQuality === "poor") {
-        report += "The windows and doors are in poor condition and require significant repair or replacement.\n";
-      }
-      report += "\n";
-      
-      // General Decoration
-      const generalDecorationText = document.getElementById("generalDecoration").value.trim();
-      const generalDecorationQuality = document.getElementById("generalDecorationQuality").value;
-      report += ">>> General Decoration:\n";
-      report += "Details: " + generalDecorationText + "\n";
-      if (generalDecorationQuality === "excellent") {
-        report += "The decoration is excellent, reflecting a well-maintained environment.\n";
-      } else if (generalDecorationQuality === "good") {
-        report += "The decoration is good, though minor updates could enhance its appeal.\n";
-      } else if (generalDecorationQuality === "average") {
-        report += "The decoration is average and may require some improvements.\n";
-      } else if (generalDecorationQuality === "poor") {
-        report += "The decoration is poor and needs significant updating.\n";
-      }
-      report += "\n";
+// ========================================================
+// B) MANAGE ADDRESS DROPDOWN
+// ========================================================
+const addressesInput = document.getElementById("addressesInput");
+const loadAddressesBtn = document.getElementById("loadAddressesBtn");
+const propertySelect = document.getElementById("propertySelect");
 
-      // General Cleanliness
-      const generalCleanlinessText = document.getElementById("generalCleanliness").value.trim();
-      const generalCleanlinessQuality = document.getElementById("generalCleanlinessQuality").value;
-      report += ">>> General Cleanliness:\n";
-      report += "Details: " + generalCleanlinessText + "\n";
-      if (generalCleanlinessQuality === "excellent") {
-        report += "The property is exceptionally clean with no issues noted.\n";
-      } else if (generalCleanlinessQuality === "good") {
-        report += "The property is clean, with only minor issues.\n";
-      } else if (generalCleanlinessQuality === "average") {
-        report += "The cleanliness is average; attention may be needed soon.\n";
-      } else if (generalCleanlinessQuality === "poor") {
-        report += "The property is not clean and requires immediate attention.\n";
-      }
-      report += "\n";
+loadAddressesBtn.addEventListener("click", () => {
+  const lines = addressesInput.value
+    .split("\n")
+    .map(l => l.trim())
+    .filter(Boolean);
 
-      // Furniture
-      const furnitureText = document.getElementById("furniture").value.trim();
-      const furnitureQuality = document.getElementById("furnitureQuality").value;
-      report += ">>> Furniture:\n";
-      report += "Details: " + furnitureText + "\n";
-      if (furnitureQuality === "excellent") {
-        report += "The furniture is in excellent condition.\n";
-      } else if (furnitureQuality === "good") {
-        report += "The furniture is in good condition with minor wear.\n";
-      } else if (furnitureQuality === "average") {
-        report += "The furniture is average and may need updating.\n";
-      } else if (furnitureQuality === "poor") {
-        report += "The furniture is in poor condition and should be replaced.\n";
-      }
-      report += "\n";
+  propertySelect.innerHTML = '<option value="">-- Select Property --</option>';
+  lines.forEach(address => {
+    const opt = document.createElement("option");
+    opt.value = address;
+    opt.textContent = address;
+    propertySelect.appendChild(opt);
+  });
+});
 
-      // Blinds
-      const blindsQuality = document.getElementById("blindsQuality").value;
-      report += ">>> Blinds:\n";
-      if (blindsQuality === "excellent") {
-        report += "The blinds are in excellent condition.\n";
-      } else if (blindsQuality === "good") {
-        report += "The blinds are in good condition.\n";
-      } else if (blindsQuality === "average") {
-        report += "The blinds are in average condition.\n";
-      } else if (blindsQuality === "poor") {
-        report += "The blinds are in poor condition and require repair.\n";
-      }
-      report += "\n";
+let currentProperty = "";
+propertySelect.addEventListener("change", () => {
+  currentProperty = propertySelect.value;
+  if (!currentProperty) return;
+  loadFormForProperty(currentProperty);
+});
 
-      // Dampness & Seals
-      const dampnessSealsText = document.getElementById("dampnessSeals").value.trim();
-      const dampnessSealsQuality = document.getElementById("dampnessSealsQuality").value;
-      report += ">>> Dampness & Seals:\n";
-      report += "Notes: " + dampnessSealsText + "\n";
-      if (dampnessSealsQuality === "excellent") {
-        report += "Seals are excellent with no dampness issues.\n";
-      } else if (dampnessSealsQuality === "good") {
-        report += "Seals are good with only minor dampness noted.\n";
-      } else if (dampnessSealsQuality === "average") {
-        report += "Seals are average and may need maintenance soon.\n";
-      } else if (dampnessSealsQuality === "poor") {
-        report += "Dampness and seals are in poor condition and need repair.\n";
-      }
-      report += "\n";
+// ========================================================
+// C) FORM FIELDS & AUTO-SAVE
+// ========================================================
+//
+// We'll treat each "quality" selector as just another text-based field
+// so we can store them in the same place.
 
-      // Kitchen
-      const kitchenText = document.getElementById("kitchenExtractor").value.trim();
-      const kitchenQuality = document.getElementById("kitchenQuality").value;
-      report += ">>> Kitchen:\n";
-      report += "Details: " + kitchenText + "\n";
-      if (kitchenQuality === "excellent") {
-        report += "The kitchen is in excellent condition.\n";
-      } else if (kitchenQuality === "good") {
-        report += "The kitchen is in good condition.\n";
-      } else if (kitchenQuality === "average") {
-        report += "The kitchen is average and may require some updates.\n";
-      } else if (kitchenQuality === "poor") {
-        report += "The kitchen is in poor condition and requires significant improvement.\n";
-      }
-      report += "\n";
+const formFields = [
+  "propertyAddress","tenants","arrearsBalance","tenancyStartDate",
+  "propertyType","keyNo","alarmCode","tenantsPhone","propertyLocked",
+  "communalAreas","windowsDoors","generalDecoration","generalCleanliness",
+  "furniture","dampnessSeals","kitchenExtractor","bathroom","ensuite",
+  "garden","repairingOtherFuel","hmo",
 
-      // Bathroom & Ensuite
-      const bathroomText = document.getElementById("bathroom").value.trim();
-      const ensuiteText = document.getElementById("ensuite").value.trim();
-      const bathroomQuality = document.getElementById("bathroomQuality").value;
-      report += ">>> Bathroom & Ensuite:\n";
-      report += "Bathroom: " + bathroomText + "\n";
-      report += "Ensuite: " + ensuiteText + "\n";
-      if (bathroomQuality === "excellent") {
-        report += "The bathroom and ensuite are in excellent condition.\n";
-      } else if (bathroomQuality === "good") {
-        report += "The bathroom and ensuite are in good condition with minor issues.\n";
-      } else if (bathroomQuality === "average") {
-        report += "The bathroom and ensuite are average and might need attention.\n";
-      } else if (bathroomQuality === "poor") {
-        report += "The bathroom and ensuite are in poor condition and require urgent repair.\n";
-      }
-      report += "\n";
+  // Add the quality dropdown IDs:
+  "windowsDoorsQuality","generalDecorationQuality","generalCleanlinessQuality",
+  "furnitureQuality","blindsQuality","dampnessSealsQuality","kitchenQuality",
+  "bathroomQuality","smokeAlarmsQuality","gardenQuality","repairingStandardQuality",
+  "hmoQuality"
+];
 
-      // Smoke Alarms
-      const smokeAlarmsQuality = document.getElementById("smokeAlarmsQuality").value;
-      report += ">>> Smoke Alarms:\n";
-      if (smokeAlarmsQuality === "excellent") {
-        report += "Smoke alarms are in excellent working order.\n";
-      } else if (smokeAlarmsQuality === "good") {
-        report += "Smoke alarms are in good condition.\n";
-      } else if (smokeAlarmsQuality === "average") {
-        report += "Smoke alarms are average; consider testing and maintenance.\n";
-      } else if (smokeAlarmsQuality === "poor") {
-        report += "Smoke alarms are in poor condition and require immediate replacement.\n";
-      }
-      report += "\n";
+const checkboxes = [
+  "communalAreasPhotos","windowsDoorsPhotos","generalDecorationPhotos",
+  "generalCleanlinessPhotos","furniturePhotos","blindsPhotos","bathroomPhotos",
+  "gardenPhotos"
+];
 
-      // Garden
-      const gardenText = document.getElementById("garden").value.trim();
-      const gardenQuality = document.getElementById("gardenQuality").value;
-      report += ">>> Garden:\n";
-      report += "Details: " + gardenText + "\n";
-      if (gardenQuality === "excellent") {
-        report += "The garden is in excellent condition with well-maintained landscaping.\n";
-      } else if (gardenQuality === "good") {
-        report += "The garden is in good condition but may need some upkeep.\n";
-      } else if (gardenQuality === "average") {
-        report += "The garden is average and could benefit from more regular maintenance.\n";
-      } else if (gardenQuality === "poor") {
-        report += "The garden is in poor condition and requires significant work.\n";
-      }
-      report += "\n";
+const radioGroups = [
+  "blinds","smokeHall","smokeLounge","smokeKitchen","smokeUpperHall",
+  "repairingKitchenStorage","repairingFixedHeating","repairingFreezerSpace",
+  "repairingCookerSink","repairingRCD"
+];
 
-      // Repairing Standard
-      const repairingOtherFuelText = document.getElementById("repairingOtherFuel").value.trim();
-      const repairingStandardQuality = document.getElementById("repairingStandardQuality").value;
-      report += ">>> Repairing Standard:\n";
-      report += "Other Fuel Source: " + repairingOtherFuelText + "\n";
-      if (repairingStandardQuality === "excellent") {
-        report += "The repairing standard meets excellent safety and maintenance criteria.\n";
-      } else if (repairingStandardQuality === "good") {
-        report += "The repairing standard is good with only minor deficiencies.\n";
-      } else if (repairingStandardQuality === "average") {
-        report += "The repairing standard is average and may need improvements.\n";
-      } else if (repairingStandardQuality === "poor") {
-        report += "The repairing standard is poor and does not meet the required criteria.\n";
-      }
-      report += "\n";
-
-      // HMO
-      const hmoText = document.getElementById("hmo").value.trim();
-      const hmoQuality = document.getElementById("hmoQuality").value;
-      report += ">>> HMO:\n";
-      report += "Details: " + hmoText + "\n";
-      if (hmoQuality === "excellent") {
-        report += "HMO aspects are excellent with all required standards met.\n";
-      } else if (hmoQuality === "good") {
-        report += "HMO aspects are good but may need slight attention.\n";
-      } else if (hmoQuality === "average") {
-        report += "HMO aspects are average and improvements are recommended.\n";
-      } else if (hmoQuality === "poor") {
-        report += "HMO aspects are poor and need significant improvement.\n";
-      }
-      report += "\n" + "=".repeat(40) + "\nEnd of Report.";
-      return report;
+function loadFormForProperty(propertyName) {
+  const data = loadPropertyData(propertyName);
+  // text/textarea/select fields (including quality dropdowns)
+  formFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.value = data[id] || "";
+  });
+  // checkboxes
+  checkboxes.forEach(id => {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.checked = !!data[id];
+  });
+  // radio groups
+  radioGroups.forEach(groupName => {
+    const val = data[groupName] || "";
+    const radios = document.getElementsByName(groupName);
+    for (let r of radios) {
+      r.checked = (r.value === val);
     }
+  });
+}
 
-    const generateBtn = document.getElementById("generateBtn");
-    const downloadBtn = document.getElementById("downloadBtn");
-    const reportOutput = document.getElementById("reportOutput");
+function handleFieldChange() {
+  if (!currentProperty) return;
+  const data = loadPropertyData(currentProperty);
 
-    generateBtn.addEventListener("click", function() {
-      const reportText = buildReport();
-      reportOutput.textContent = reportText;
-      downloadBtn.disabled = false;
-      saveReportToLocalStorage(reportText);
-      displaySavedReports();
+  // text/select fields (including quality dropdowns)
+  formFields.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.value.trim();
+  });
+  // checkboxes
+  checkboxes.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) data[id] = el.checked;
+  });
+  // radio groups
+  radioGroups.forEach(groupName => {
+    const radios = document.getElementsByName(groupName);
+    let selectedVal = "";
+    for (let r of radios) {
+      if (r.checked) selectedVal = r.value;
+    }
+    data[groupName] = selectedVal;
+  });
+
+  savePropertyData(currentProperty, data);
+}
+
+document.querySelectorAll("input, textarea, select").forEach(el => {
+  el.addEventListener("change", handleFieldChange);
+});
+
+// ========================================================
+// D) REPORT GENERATION
+// ========================================================
+function getVal(obj, key) { return obj[key] || ""; }
+function getCheckboxText(obj, key) { return obj[key] ? "Yes" : "No"; }
+
+function describeQuality(q, subject) {
+  // Helper function returning a line for the quality
+  if (!q) return ""; // no selection
+  if (q === "excellent") return `The ${subject} is in excellent condition, needing minimal attention.\n`;
+  if (q === "good")      return `The ${subject} is in good condition, with only minor issues.\n`;
+  if (q === "average")   return `The ${subject} is average; some updates may be required soon.\n`;
+  if (q === "poor")      return `The ${subject} is in poor condition and requires urgent attention.\n`;
+  return "";
+}
+
+function buildReport() {
+  if (!currentProperty) return "No property selected.";
+  const data = loadPropertyData(currentProperty);
+
+  let report = "PROPERTY INSPECTION REPORT\n" + "=".repeat(40) + "\n\n";
+
+  // 1) General Property Info
+  report += ">>> General Property Info:\n";
+  report += "Property Address: " + getVal(data,"propertyAddress") + "\n";
+  report += "Tenants: " + getVal(data,"tenants") + "\n";
+  report += "Arrears Balance: " + getVal(data,"arrearsBalance") + "\n";
+  report += "Tenancy Start Date: " + getVal(data,"tenancyStartDate") + "\n";
+  report += "Type: " + getVal(data,"propertyType") + "\n";
+  report += "Key No: " + getVal(data,"keyNo") + "\n";
+  report += "Alarm Code: " + getVal(data,"alarmCode") + "\n";
+  report += "Tenants' Phone: " + getVal(data,"tenantsPhone") + "\n";
+  report += "Property Locked on Entry: " + getVal(data,"propertyLocked") + "\n";
+  report += "Communal Areas: " + getVal(data,"communalAreas") + "\n";
+  report += "Communal Areas Photos Taken: " + getCheckboxText(data,"communalAreasPhotos") + "\n\n";
+
+  // 2) Windows & Doors
+  report += ">>> Windows & Doors:\n";
+  report += "Details: " + getVal(data,"windowsDoors") + "\n";
+  report += "Photos Taken: " + getCheckboxText(data,"windowsDoorsPhotos") + "\n";
+  report += describeQuality(data["windowsDoorsQuality"], "windows and doors");
+  report += "\n";
+
+  // 3) General Decoration
+  report += ">>> General Decoration:\n";
+  report += "Details: " + getVal(data,"generalDecoration") + "\n";
+  report += "Photos Taken: " + getCheckboxText(data,"generalDecorationPhotos") + "\n";
+  report += describeQuality(data["generalDecorationQuality"], "general decoration");
+  report += "\n";
+
+  // 4) General Cleanliness
+  report += ">>> General Cleanliness:\n";
+  report += "Details: " + getVal(data,"generalCleanliness") + "\n";
+  report += "Photos Taken: " + getCheckboxText(data,"generalCleanlinessPhotos") + "\n";
+  report += describeQuality(data["generalCleanlinessQuality"], "general cleanliness");
+  report += "\n";
+
+  // 5) Furniture
+  report += ">>> Furniture:\n";
+  report += "Details: " + getVal(data,"furniture") + "\n";
+  report += "Photos Taken: " + getCheckboxText(data,"furniturePhotos") + "\n";
+  report += describeQuality(data["furnitureQuality"], "furniture");
+  report += "\n";
+
+  // 6) Blinds
+  report += ">>> Blinds:\n";
+  report += "Tension Clips: " + getVal(data,"blinds") + "\n";
+  report += "Photos Taken: " + getCheckboxText(data,"blindsPhotos") + "\n";
+  report += describeQuality(data["blindsQuality"], "blinds");
+  report += "\n";
+
+  // 7) Dampness & Seals
+  report += ">>> Dampness & Seals:\n";
+  report += "Notes: " + getVal(data,"dampnessSeals") + "\n";
+  report += describeQuality(data["dampnessSealsQuality"], "dampness & seals");
+  report += "\n";
+
+  // 8) Kitchen
+  report += ">>> Kitchen:\n";
+  report += "Extractor & Seals: " + getVal(data,"kitchenExtractor") + "\n";
+  report += describeQuality(data["kitchenQuality"], "kitchen");
+  report += "\n";
+
+  // 9) Bathroom & Ensuite
+  report += ">>> Bathroom & Ensuite:\n";
+  report += "Bathroom: " + getVal(data,"bathroom") + "\n";
+  report += "Ensuite: " + getVal(data,"ensuite") + "\n";
+  report += "Photos Taken: " + getCheckboxText(data,"bathroomPhotos") + "\n";
+  report += describeQuality(data["bathroomQuality"], "bathroom & ensuite");
+  report += "\n";
+
+  // 10) Smoke Alarms
+  report += ">>> Smoke Alarms:\n";
+  report += "Hall Ceiling Mounted: " + getVal(data,"smokeHall") + "\n";
+  report += "Lounge Ceiling Mounted: " + getVal(data,"smokeLounge") + "\n";
+  report += "Kitchen (Heat Detector) Ceiling Mounted: " + getVal(data,"smokeKitchen") + "\n";
+  report += "Upper Hall Ceiling Mounted: " + getVal(data,"smokeUpperHall") + "\n";
+  report += describeQuality(data["smokeAlarmsQuality"], "smoke alarms");
+  report += "\n";
+
+  // 11) Garden
+  report += ">>> Garden:\n";
+  report += "Details: " + getVal(data,"garden") + "\n";
+  report += "Photos Taken: " + getCheckboxText(data,"gardenPhotos") + "\n";
+  report += describeQuality(data["gardenQuality"], "garden");
+  report += "\n";
+
+  // 12) Repairing Standard
+  report += ">>> Repairing Standard:\n";
+  report += "Kitchen Storage (1 cubic meter): " + getVal(data,"repairingKitchenStorage") + "\n";
+  report += "Fixed Heating (heater in each room): " + getVal(data,"repairingFixedHeating") + "\n";
+  report += "Freezer Space & Power: " + getVal(data,"repairingFreezerSpace") + "\n";
+  report += "Other Fuel Source: " + getVal(data,"repairingOtherFuel") + "\n";
+  report += "300mm+ Space between Cooker & Sink: " + getVal(data,"repairingCookerSink") + "\n";
+  report += "RCD Protection: " + getVal(data,"repairingRCD") + "\n";
+  report += describeQuality(data["repairingStandardQuality"], "repairing standard aspects");
+  report += "\n";
+
+  // 13) HMO
+  report += ">>> HMO:\n";
+  report += "Details: " + getVal(data,"hmo") + "\n";
+  report += describeQuality(data["hmoQuality"], "HMO requirements");
+  report += "\n" + "=".repeat(40) + "\nEnd of Report.";
+
+  return report;
+}
+
+const generateBtn = document.getElementById("generateBtn");
+const downloadBtn = document.getElementById("downloadBtn");
+const reportOutput = document.getElementById("reportOutput");
+
+generateBtn.addEventListener("click", function() {
+  if (!currentProperty) {
+    alert("Please select a property first.");
+    return;
+  }
+  const reportText = buildReport();
+  reportOutput.textContent = reportText;
+  downloadBtn.disabled = false;
+  saveReportToLocalStorage(reportText);
+  displaySavedReports();
+});
+
+downloadBtn.addEventListener("click", function() {
+  const reportText = reportOutput.textContent;
+  if (!reportText) return;
+  const blob = new Blob([reportText], { type: "text/plain" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  const safeName = currentProperty.replace(/\s+/g, "_");
+  a.download = `inspection_report_${safeName}.txt`;
+  a.click();
+  window.URL.revokeObjectURL(url);
+});
+
+// ========================================================
+// E) SAVING COMPLETED REPORTS (MAX 10) INTO LOCALSTORAGE
+// ========================================================
+function saveReportToLocalStorage(reportText) {
+  const timeStamp = new Date().toISOString();
+  const propertyName = currentProperty || "UnnamedProperty";
+  const newReport = { property: propertyName, content: reportText, date: timeStamp };
+  let savedReports = JSON.parse(localStorage.getItem("savedReports")) || [];
+  savedReports.unshift(newReport);
+  if (savedReports.length > 10) savedReports.pop();
+  localStorage.setItem("savedReports", JSON.stringify(savedReports));
+}
+
+function displaySavedReports() {
+  const reportsContainer = document.getElementById("reportsContainer");
+  reportsContainer.innerHTML = "";
+  const savedReports = JSON.parse(localStorage.getItem("savedReports")) || [];
+  if (!savedReports.length) {
+    reportsContainer.innerHTML = "<p>No reports saved yet.</p>";
+    return;
+  }
+  savedReports.forEach(reportObj => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "saved-report-item";
+    const info = document.createElement("span");
+    info.textContent = reportObj.property + " (" + reportObj.date.slice(0,19).replace('T',' ') + ")";
+    const dlBtn = document.createElement("button");
+    dlBtn.textContent = "Download";
+    dlBtn.addEventListener("click", () => {
+      downloadSavedReport(reportObj);
     });
+    itemDiv.appendChild(info);
+    itemDiv.appendChild(dlBtn);
+    reportsContainer.appendChild(itemDiv);
+  });
+}
 
-    downloadBtn.addEventListener("click", function() {
-      const reportText = reportOutput.textContent;
-      const blob = new Blob([reportText], { type: "text/plain" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "inspection_report.txt";
-      a.click();
-      window.URL.revokeObjectURL(url);
-    });
+function downloadSavedReport(reportObj) {
+  const fileName = reportObj.property.replace(/\s+/g, "_") + "_" + reportObj.date.slice(0,10) + ".txt";
+  const blob = new Blob([reportObj.content], { type: "text/plain" });
+  const url = window.URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName;
+  a.click();
+  window.URL.revokeObjectURL(url);
+}
 
-    // ========================================================
-    // Saving Completed Reports (Max 10) into localStorage
-    function saveReportToLocalStorage(reportText) {
-      const timeStamp = new Date().toISOString();
-      const newReport = {
-        property: "Property Report", // Use a dynamic name if available
-        content: reportText,
-        date: timeStamp
+// ========================================================
+// F) ACCORDION / TOGGLE SECTIONS
+// ========================================================
+document.querySelectorAll(".section h3").forEach(header => {
+  header.addEventListener("click", () => {
+    const content = header.nextElementSibling;
+    content.classList.toggle("active");
+  });
+});
+
+// ========================================================
+// G) ON PAGE LOAD
+// ========================================================
+document.addEventListener("DOMContentLoaded", function() {
+  displaySavedReports();
+
+  // Example: Add image preview logic for Windows & Doors (you can replicate for others)
+  const windowsDoorsPhotoInput = document.getElementById("windowsDoorsPhotoInput");
+  const windowsDoorsPhotoPreview = document.getElementById("windowsDoorsPhotoPreview");
+  windowsDoorsPhotoInput.addEventListener("change", function() {
+    const files = windowsDoorsPhotoInput.files;
+    windowsDoorsPhotoPreview.innerHTML = "";
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i];
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        const img = document.createElement("img");
+        img.src = e.target.result;
+        windowsDoorsPhotoPreview.appendChild(img);
       };
-      let savedReports = JSON.parse(localStorage.getItem("savedReports")) || [];
-      savedReports.unshift(newReport);
-      if (savedReports.length > 10) {
-        savedReports.pop();
-      }
-      localStorage.setItem("savedReports", JSON.stringify(savedReports));
+      reader.readAsDataURL(file);
     }
+  });
 
-    function displaySavedReports() {
-      const reportsContainer = document.getElementById("reportsContainer");
-      reportsContainer.innerHTML = "";
-      const savedReports = JSON.parse(localStorage.getItem("savedReports")) || [];
-      if (!savedReports.length) {
-        reportsContainer.innerHTML = "<p>No reports saved yet.</p>";
-        return;
-      }
-      savedReports.forEach(reportObj => {
-        const itemDiv = document.createElement("div");
-        itemDiv.className = "saved-report-item";
-        const info = document.createElement("span");
-        info.textContent = reportObj.property + " (" + reportObj.date.slice(0, 19).replace('T',' ') + ")";
-        const dlBtn = document.createElement("button");
-        dlBtn.textContent = "Download";
-        dlBtn.addEventListener("click", () => {
-          downloadSavedReport(reportObj);
-        });
-        itemDiv.appendChild(info);
-        itemDiv.appendChild(dlBtn);
-        reportsContainer.appendChild(itemDiv);
-      });
-    }
-
-    function downloadSavedReport(reportObj) {
-      const fileName = reportObj.property.replace(/\s+/g, "_") + "_" + reportObj.date.slice(0, 10) + ".txt";
-      const blob = new Blob([reportObj.content], { type: "text/plain" });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = fileName;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
-
-    // ========================================================
-    // On Page Load: Display Saved Reports
-    document.addEventListener("DOMContentLoaded", function() {
-      displaySavedReports();
-    });
-  </script>
-  </div>
+  // You would replicate similar "change" event logic for each photo input if you want previews everywhere.
+});
+</script>
 </body>
 </html>
