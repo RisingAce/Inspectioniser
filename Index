@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Property Inspection Report Generator</title>
+  <style>
+    /* Simple CSS for layout and styling */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      line-height: 1.6;
+    }
+    h2 {
+      text-align: center;
+    }
+    .section {
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .section h3 {
+      margin: 0;
+      cursor: pointer;
+      background: #007BFF;
+      color: white;
+      padding: 10px;
+      border-radius: 4px;
+    }
+    .section-content {
+      padding: 10px;
+      display: none;
+    }
+    .section-content.active {
+      display: block;
+    }
+    .form-group {
+      margin-bottom: 10px;
+    }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-top: 5px;
+    }
+    input[type="text"],
+    input[type="date"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 5px;
+      margin-top: 5px;
+      box-sizing: border-box;
+    }
+    input[type="checkbox"],
+    input[type="radio"] {
+      margin-right: 5px;
+    }
+    .btn {
+      padding: 10px 15px;
+      margin: 5px;
+      background: #007BFF;
+      border: none;
+      color: white;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+    .btn:hover {
+      background: #0056b3;
+    }
+    pre {
+      background: #f4f4f4;
+      padding: 10px;
+      white-space: pre-wrap;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <h2>Property Inspection Report Form</h2>
+  <form id="inspectionForm">
+    <!-- Section 1: General Property Info -->
+    <div class="section">
+      <h3>General Property Info</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="propertyAddress">Property Address:</label>
+          <input type="text" id="propertyAddress" placeholder="Enter Property Address">
+        </div>
+        <div class="form-group">
+          <label for="tenants">Tenants:</label>
+          <input type="text" id="tenants" placeholder="Enter Tenants' Names">
+        </div>
+        <div class="form-group">
+          <label for="arrearsBalance">Arrears Balance:</label>
+          <input type="text" id="arrearsBalance" placeholder="Enter Arrears Balance">
+        </div>
+        <div class="form-group">
+          <label for="tenancyStartDate">Tenancy Start Date:</label>
+          <input type="date" id="tenancyStartDate">
+        </div>
+        <div class="form-group">
+          <label for="propertyType">Type:</label>
+          <select id="propertyType">
+            <option value="Furnished">Furnished</option>
+            <option value="Unfurnished">Unfurnished</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="keyNo">Key No:</label>
+          <input type="text" id="keyNo" placeholder="Enter Key Number">
+        </div>
+        <div class="form-group">
+          <label for="alarmCode">Alarm Code:</label>
+          <input type="text" id="alarmCode" placeholder="Enter Alarm Code">
+        </div>
+        <div class="form-group">
+          <label for="tenantsPhone">Tenants' Phone Numbers:</label>
+          <input type="text" id="tenantsPhone" placeholder="Enter Phone Numbers">
+        </div>
+        <div class="form-group">
+          <label for="propertyLocked">How is the Property Locked on Entry?</label>
+          <input type="text" id="propertyLocked" placeholder="e.g., Main door with digital lock">
+        </div>
+        <div class="form-group">
+          <label for="communalAreas">Communal Areas:</label>
+          <textarea id="communalAreas" placeholder="Describe communal areas: Entryphone / Stairwell/ Stonework/roof /gutters. Safe locks front and back? Access to all areas (bin areas/garden etc)? Any fire hazards/obstructions? Lighting OK?"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="communalAreasPhotos">
+          <label for="communalAreasPhotos">Photos Taken for Communal Areas?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 2: Windows & Doors -->
+    <div class="section">
+      <h3>Windows & Doors</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="windowsDoors">Type / Condition / Do they all open? / Do they need painting?</label>
+          <textarea id="windowsDoors"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="windowsDoorsPhotos">
+          <label for="windowsDoorsPhotos">Photos Taken for Windows & Doors?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 3: General Decoration -->
+    <div class="section">
+      <h3>General Decoration</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="generalDecoration">Is it tired? Does the Landlord need to repaint or re-carpet in the next 12/18 months?</label>
+          <textarea id="generalDecoration"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="generalDecorationPhotos">
+          <label for="generalDecorationPhotos">Photos Taken for General Decoration?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 4: General Cleanliness -->
+    <div class="section">
+      <h3>General Cleanliness</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="generalCleanliness">Pets? / Smoking? / Extra Occupants? / Issues?</label>
+          <textarea id="generalCleanliness"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="generalCleanlinessPhotos">
+          <label for="generalCleanlinessPhotos">Photos Taken for General Cleanliness?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 5: Furniture -->
+    <div class="section">
+      <h3>Furniture</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="furniture">Detail condition / Wear & Tear / Fire Safety</label>
+          <textarea id="furniture"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="furniturePhotos">
+          <label for="furniturePhotos">Photos Taken for Furniture?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 6: Blinds -->
+    <div class="section">
+      <h3>Blinds</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label>Do all Blinds have Tension Clips?</label>
+          <label><input type="radio" name="blinds" value="Yes"> Yes</label>
+          <label><input type="radio" name="blinds" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="blindsPhotos">
+          <label for="blindsPhotos">Photos Taken for Blinds?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 7: Dampness & Seals -->
+    <div class="section">
+      <h3>Dampness & Seals</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="dampnessSeals">Notes on Dampness & Seals</label>
+          <textarea id="dampnessSeals"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 8: Kitchen -->
+    <div class="section">
+      <h3>Kitchen</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="kitchenExtractor">Check Extractor & Seals</label>
+          <textarea id="kitchenExtractor"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 9: Bathroom & Ensuite -->
+    <div class="section">
+      <h3>Bathroom & Ensuite</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="bathroom">Check Shower Heads & Seals for Bathroom</label>
+          <textarea id="bathroom"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="ensuite">Check Shower Heads & Seals for Ensuite</label>
+          <textarea id="ensuite"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="bathroomPhotos">
+          <label for="bathroomPhotos">Photos Taken for Bathroom/Ensuite?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 10: Smoke Alarms -->
+    <div class="section">
+      <h3>Smoke Alarms</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label>Hall Ceiling Mounted?</label>
+          <label><input type="radio" name="smokeHall" value="Yes"> Yes</label>
+          <label><input type="radio" name="smokeHall" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <label>Lounge Ceiling Mounted?</label>
+          <label><input type="radio" name="smokeLounge" value="Yes"> Yes</label>
+          <label><input type="radio" name="smokeLounge" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <label>Kitchen (Heat Detector) Ceiling Mounted?</label>
+          <label><input type="radio" name="smokeKitchen" value="Yes"> Yes</label>
+          <label><input type="radio" name="smokeKitchen" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <label>Upper Hall Ceiling Mounted?</label>
+          <label><input type="radio" name="smokeUpperHall" value="Yes"> Yes</label>
+          <label><input type="radio" name="smokeUpperHall" value="No"> No</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 11: Garden -->
+    <div class="section">
+      <h3>Garden</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="garden">Adequately maintained for time of year? Grass Cut? Trees or Hedges Trimmed? Gutters/Downpipes Clear?</label>
+          <textarea id="garden"></textarea>
+        </div>
+        <div class="form-group">
+          <input type="checkbox" id="gardenPhotos">
+          <label for="gardenPhotos">Photos Taken for Garden?</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 12: Repairing Standard -->
+    <div class="section">
+      <h3>Repairing Standard</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label>Kitchen - 1 cubic meter storage space?</label>
+          <label><input type="radio" name="repairingKitchenStorage" value="Yes"> Yes</label>
+          <label><input type="radio" name="repairingKitchenStorage" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <label>Fixed heating (heater in each room)?</label>
+          <label><input type="radio" name="repairingFixedHeating" value="Yes"> Yes</label>
+          <label><input type="radio" name="repairingFixedHeating" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <label>Space & power for a freezer?</label>
+          <label><input type="radio" name="repairingFreezerSpace" value="Yes"> Yes</label>
+          <label><input type="radio" name="repairingFreezerSpace" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <label for="repairingOtherFuel">Any other fuel source present?</label>
+          <input type="text" id="repairingOtherFuel">
+        </div>
+        <div class="form-group">
+          <label>300mm or more space between cooker & sink?</label>
+          <label><input type="radio" name="repairingCookerSink" value="Yes"> Yes</label>
+          <label><input type="radio" name="repairingCookerSink" value="No"> No</label>
+        </div>
+        <div class="form-group">
+          <label>RCD Protection?</label>
+          <label><input type="radio" name="repairingRCD" value="Yes"> Yes</label>
+          <label><input type="radio" name="repairingRCD" value="No"> No</label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Section 13: HMO -->
+    <div class="section">
+      <h3>HMO</h3>
+      <div class="section-content">
+        <div class="form-group">
+          <label for="hmo">Check all smoke alarms and HMO notice board</label>
+          <textarea id="hmo"></textarea>
+        </div>
+      </div>
+    </div>
+
+    <!-- Buttons -->
+    <div class="form-group">
+      <button type="button" class="btn" id="generateBtn">Generate Report</button>
+      <button type="button" class="btn" id="downloadBtn" disabled>Download Report</button>
+    </div>
+  </form>
+
+  <!-- Report Display -->
+  <pre id="reportOutput"></pre>
+
+  <script>
+    // Toggle sections (accordion behavior)
+    document.querySelectorAll('.section h3').forEach(function(header) {
+      header.addEventListener('click', function() {
+        const content = this.nextElementSibling;
+        content.classList.toggle('active');
+      });
+    });
+
+    // Function to generate the report text based on form values
+    function generateReport() {
+      let report = "PROPERTY INSPECTION REPORT\n";
+      report += "=".repeat(40) + "\n\n";
+
+      // Helper functions
+      const getVal = (id) => document.getElementById(id).value;
+      const getCheckbox = (id) => document.getElementById(id).checked ? "Yes" : "No";
+      const getRadio = (name) => {
+        const radios = document.getElementsByName(name);
+        for (let radio of radios) {
+          if (radio.checked) return radio.value;
+        }
+        return "";
+      };
+
+      // Section 1: General Property Info
+      report += ">>> General Property Info:\n";
+      report += "Property Address: " + getVal("propertyAddress") + "\n";
+      report += "Tenants: " + getVal("tenants") + "\n";
+      report += "Arrears Balance: " + getVal("arrearsBalance") + "\n";
+      report += "Tenancy Start Date: " + getVal("tenancyStartDate") + "\n";
+      report += "Type: " + getVal("propertyType") + "\n";
+      report += "Key No: " + getVal("keyNo") + "\n";
+      report += "Alarm Code: " + getVal("alarmCode") + "\n";
+      report += "Tenants' Phone Numbers: " + getVal("tenantsPhone") + "\n";
+      report += "Property Locked on Entry: " + getVal("propertyLocked") + "\n";
+      report += "Communal Areas: " + getVal("communalAreas") + "\n";
+      report += "Communal Areas Photos Taken: " + getCheckbox("communalAreasPhotos") + "\n\n";
+
+      // Section 2: Windows & Doors
+      report += ">>> Windows & Doors:\n";
+      report += "Details: " + getVal("windowsDoors") + "\n";
+      report += "Photos Taken: " + getCheckbox("windowsDoorsPhotos") + "\n\n";
+
+      // Section 3: General Decoration
+      report += ">>> General Decoration:\n";
+      report += "Details: " + getVal("generalDecoration") + "\n";
+      report += "Photos Taken: " + getCheckbox("generalDecorationPhotos") + "\n\n";
+
+      // Section 4: General Cleanliness
+      report += ">>> General Cleanliness:\n";
+      report += "Details: " + getVal("generalCleanliness") + "\n";
+      report += "Photos Taken: " + getCheckbox("generalCleanlinessPhotos") + "\n\n";
+
+      // Section 5: Furniture
+      report += ">>> Furniture:\n";
+      report += "Details: " + getVal("furniture") + "\n";
+      report += "Photos Taken: " + getCheckbox("furniturePhotos") + "\n\n";
+
+      // Section 6: Blinds
+      report += ">>> Blinds:\n";
+      report += "Do all Blinds have Tension Clips: " + getRadio("blinds") + "\n";
+      report += "Photos Taken: " + getCheckbox("blindsPhotos") + "\n\n";
+
+      // Section 7: Dampness & Seals
+      report += ">>> Dampness & Seals:\n";
+      report += "Notes: " + getVal("dampnessSeals") + "\n\n";
+
+      // Section 8: Kitchen
+      report += ">>> Kitchen:\n";
+      report += "Extractor & Seals: " + getVal("kitchenExtractor") + "\n\n";
+
+      // Section 9: Bathroom & Ensuite
+      report += ">>> Bathroom & Ensuite:\n";
+      report += "Bathroom: " + getVal("bathroom") + "\n";
+      report += "Ensuite: " + getVal("ensuite") + "\n";
+      report += "Photos Taken: " + getCheckbox("bathroomPhotos") + "\n\n";
+
+      // Section 10: Smoke Alarms
+      report += ">>> Smoke Alarms:\n";
+      report += "Hall Ceiling Mounted: " + getRadio("smokeHall") + "\n";
+      report += "Lounge Ceiling Mounted: " + getRadio("smokeLounge") + "\n";
+      report += "Kitchen (Heat Detector) Ceiling Mounted: " + getRadio("smokeKitchen") + "\n";
+      report += "Upper Hall Ceiling Mounted: " + getRadio("smokeUpperHall") + "\n\n";
+
+      // Section 11: Garden
+      report += ">>> Garden:\n";
+      report += "Details: " + getVal("garden") + "\n";
+      report += "Photos Taken: " + getCheckbox("gardenPhotos") + "\n\n";
+
+      // Section 12: Repairing Standard
+      report += ">>> Repairing Standard:\n";
+      report += "Kitchen Storage (1 cubic meter): " + getRadio("repairingKitchenStorage") + "\n";
+      report += "Fixed Heating (heater in each room): " + getRadio("repairingFixedHeating") + "\n";
+      report += "Freezer Space & Power: " + getRadio("repairingFreezerSpace") + "\n";
+      report += "Other Fuel Source: " + getVal("repairingOtherFuel") + "\n";
+      report += "300mm+ Space between Cooker & Sink: " + getRadio("repairingCookerSink") + "\n";
+      report += "RCD Protection: " + getRadio("repairingRCD") + "\n\n";
+
+      // Section 13: HMO
+      report += ">>> HMO:\n";
+      report += "Details: " + getVal("hmo") + "\n\n";
+
+      report += "=".repeat(40) + "\n";
+      report += "End of Report.";
+      return report;
+    }
+
+    // Event listener for Generate Report button
+    document.getElementById("generateBtn").addEventListener("click", function() {
+      const reportText = generateReport();
+      document.getElementById("reportOutput").textContent = reportText;
+      document.getElementById("downloadBtn").disabled = false;
+    });
+
+    // Event listener for Download Report button
+    document.getElementById("downloadBtn").addEventListener("click", function() {
+      const reportText = document.getElementById("reportOutput").textContent;
+      const blob = new Blob([reportText], { type: "text/plain" });
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "inspection_report.txt";
+      a.click();
+      window.URL.revokeObjectURL(url);
+    });
+  </script>
+</body>
+</html>
