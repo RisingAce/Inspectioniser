@@ -30,7 +30,7 @@
       --window-shadow: rgba(0, 0, 0, 0.2);
       --window-border: #242424;
       --success: #66a182;
-      --error: #d35d6e;
+      --error: #d35d6e; /* used throughout code */
       --warning: #e7a75c;
       
       /* Size variables */
@@ -307,7 +307,8 @@
     .desktop {
       width:100%; height:calc(100% - 40px);
       position:relative; overflow:hidden;
-      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' ...");
+      /* Example placeholder for background image/pattern:
+         background-image: url("data:image/svg+xml,<svg>..."); */
     }
     .toolbar {
       width:100%; height:40px; background-color:var(--window-header);
@@ -426,8 +427,7 @@
       top:6px; left:2px;
     }
     .window-maximize:hover::after, .window-maximize:hover::before {
-      content:'';
-      position:absolute; background-color:var(--window-border);
+      content:''; position:absolute; background-color:var(--window-border);
     }
     .window-maximize:hover::after {
       width:7px; height:7px; border:1px solid var(--window-border);
@@ -485,20 +485,43 @@
       --border-width:2px;
     }
 
-    /* Dark Mode */
-    .dark-mode {
-      --bg-primary:#1a1a1a;
-      --bg-secondary:#2a2a2a;
-      --bg-window:#333333;
-      --text-primary:#e0e0e0;
-      --text-secondary:#aaaaaa;
-      --accent-primary:#5c9ead;
-      --accent-secondary:#7abf8e;
-      --accent-tertiary:#f0a868;
-      --border-color:#555555;
-      --window-header:#444455;
-      --window-shadow:rgba(0,0,0,0.3);
-      --window-border:#666666;
+    /* Minimal stub styles for .toggle, .toggle-switch, .drag-over, .canvas-tool */
+    .toggle {
+      display: inline-block;
+      position: relative;
+      padding-left: 50px;
+      cursor: pointer;
+      margin-bottom: 0.5rem;
+      user-select: none;
+      font-size: 0.9rem;
+    }
+    .toggle-switch {
+      position: absolute;
+      left: 0; top: 0;
+      width: 40px; height: 20px;
+      background: #ccc;
+      border-radius: 10px;
+      transition: 0.3s;
+    }
+    .toggle.active .toggle-switch {
+      background: var(--accent-primary);
+    }
+    .drag-over {
+      background-color: rgba(0, 0, 0, 0.1) !important;
+      border: 2px dashed var(--border-color) !important;
+    }
+    .canvas-tool {
+      background-color: var(--accent-primary);
+      color: var(--bg-window);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      box-shadow: 2px 2px 0 var(--border-color);
+    }
+    .canvas-tool:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 var(--border-color);
     }
 
     /* Responsive */
@@ -762,12 +785,12 @@
         const fi = document.getElementById('form-file-input');
         dz.addEventListener('click', () => fi.click());
         dz.addEventListener('dragover', (e)=>{
-          e.preventDefault(); dz.classList.add('active');
+          e.preventDefault(); dz.classList.add('drag-over');
         });
-        dz.addEventListener('dragleave', ()=> dz.classList.remove('active'));
+        dz.addEventListener('dragleave', ()=> dz.classList.remove('drag-over'));
         dz.addEventListener('drop', (e)=>{
           e.preventDefault();
-          dz.classList.remove('active');
+          dz.classList.remove('drag-over');
           if(e.dataTransfer.files.length){
             handleDocxFile(e.dataTransfer.files[0]);
           }
@@ -1436,7 +1459,11 @@
                   state.currentInspection.rooms.map(r=>`
                     <li style="padding:0.75rem 1rem; border-bottom:1px solid var(--border-color); display:flex; justify-content:space-between; align-items:center;">
                       <strong>${r.name}</strong> - Condition: ${r.condition}/10
-                      ${r.urgent?`<span style="background:${state.error}; color:#fff; padding:0.25rem 0.5rem; border-radius:3px; font-size:0.8rem;">URGENT</span>`:''}
+                      ${
+                        r.urgent
+                          ? `<span style="background:var(--error); color:#fff; padding:0.25rem 0.5rem; border-radius:3px; font-size:0.8rem;">URGENT</span>`
+                          : ''
+                      }
                     </li>
                   `).join('')
                 }
@@ -1770,7 +1797,7 @@
         const tgt = e.target;
         const x = (parseFloat(tgt.getAttribute('data-x'))||0)+ e.dx;
         const y = (parseFloat(tgt.getAttribute('data-y'))||0)+ e.dy;
-        tgt.style.transform=`translate(${x}px,${y}px)`;
+        tgt.style.transform=\`translate(\${x}px,\${y}px)\`;
         tgt.setAttribute('data-x',x);
         tgt.setAttribute('data-y',y);
       }
