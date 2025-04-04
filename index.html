@@ -1,13 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>InspectSpace • Property Inspection Tool</title>
+  
   <!-- External dependencies -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.17/interact.min.js"></script>
+  <!-- Mammoth for docx parsing (CDN) -->
+  <script src="https://unpkg.com/mammoth@1.5.4/dist/mammoth.browser.min.js"></script>
+  
   <style>
     /* === GLOBAL STYLES === */
     :root {
@@ -1138,6 +1142,17 @@
             <div class="logo">🏠 InspectSpace</div>
             <h1>Property Inspection Tool</h1>
             <p>Streamline your property inspections with our intuitive, user-friendly tool.</p>
+            
+            <!-- New drag & drop zone for docx/txt -->
+            <div class="form-group" style="margin: 2rem 0;">
+              <label class="form-label">Or drag and drop an inspection form file:</label>
+              <div id="form-dropzone" class="dropzone">
+                <i class="fas fa-file-import" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                <p>Drag and drop your .docx or .txt form here</p>
+                <input type="file" id="form-file-input" style="display: none;" accept=".doc,.docx,.txt" />
+              </div>
+            </div>
+            
             <button id="start-inspection-btn" class="start-btn">
               <i class="fas fa-clipboard-check"></i> Begin New Inspection
             </button>
@@ -1301,6 +1316,35 @@
         
         // Make windows draggable
         setupInteract();
+        
+        // Now set up drag/drop for the form on the start screen
+        const formDropzone = document.getElementById('form-dropzone');
+        const formFileInput = document.getElementById('form-file-input');
+        
+        formDropzone.addEventListener('click', () => {
+          formFileInput.click();
+        });
+        
+        formDropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          formDropzone.classList.add('active');
+        });
+        formDropzone.addEventListener('dragleave', () => {
+          formDropzone.classList.remove('active');
+        });
+        formDropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          formDropzone.classList.remove('active');
+          if (e.dataTransfer.files.length) {
+            handleDocxFile(e.dataTransfer.files[0]);
+          }
+        });
+        
+        formFileInput.addEventListener('change', () => {
+          if (formFileInput.files.length) {
+            handleDocxFile(formFileInput.files[0]);
+          }
+        });
       }
       
       // Set up interact.js for draggable windows
@@ -1342,9 +1386,112 @@
         bringWindowToFront(windowId);
       }
       
+      // ========== DRAGGED DOCX / TXT FILE HANDLING ==========
+      
+      async function handleDocxFile(file) {
+        if (!file) return;
+        
+        let fileName = file.name.toLowerCase();
+        let text = "";
+        
+        try {
+          // If .docx, try mammoth
+          if (fileName.endsWith('.docx') || fileName.endsWith('.doc')) {
+            const arrayBuffer = await file.arrayBuffer();
+            const result = await window.mammoth.extractRawText({ arrayBuffer });
+            text = result.value;
+          } 
+          // If .txt or fallback
+          else if (fileName.endsWith('.txt')) {
+            text = await file.text();
+          } else {
+            alert("Unsupported file type. Please use .docx or .txt");
+            return;
+          }
+        } catch (err) {
+          console.warn("Error reading docx with mammoth, falling back to plain text attempt:", err);
+          text = await file.text();
+        }
+        
+        // Now we have "text" from the file
+        populateInspectionFromDocText(text);
+      }
+      
+      // A naive function to parse lines from the doc text
+      function populateInspectionFromDocText(text) {
+        // If there's no current inspection, let's start one
+        if (!state.currentInspection) {
+          startNewInspection();
+        }
+        
+        // naive parse
+        const lines = text.split(/\r?\n/).map(l => l.trim()).filter(Boolean);
+        
+        lines.forEach(line => {
+          // Property line
+          if (line.startsWith("Property:")) {
+            const val = line.replace("Property:", "").trim();
+            state.currentInspection.propertyAddress = val;
+          }
+          
+          // Tenants line
+          if (line.startsWith("Tenants:")) {
+            const val = line.replace("Tenants:", "").trim();
+            // We'll just store as a single field for now
+            state.currentInspection.tenantName = val;
+          }
+          
+          // Tenancy Start Date
+          if (line.startsWith("Tenancy Start Date:")) {
+            const val = line.replace("Tenancy Start Date:", "").trim();
+            // store as a string for now
+            state.currentInspection.date = val;
+          }
+          
+          // Some headings that can auto-create "rooms"
+          // For example, "Windows & Doors:", "General Decoration:", etc.
+          const knownRooms = [
+            "Windows & Doors:",
+            "General Decoration:",
+            "General Cleanliness:",
+            "Furniture:",
+            "Kitchen:",
+            "Bathroom:",
+            "Ensuite:",
+            "Smoke Alarms:",
+            "Garden:"
+          ];
+          
+          knownRooms.forEach(roomHeading => {
+            if (line.startsWith(roomHeading)) {
+              const roomName = roomHeading.replace(":", "");
+              const newRoom = {
+                id: generateId(),
+                name: roomName,
+                condition: 5,
+                notes: "",
+                photos: [],
+                urgent: false
+              };
+              // Add if not existing
+              if (!state.currentInspection.rooms.some(r => r.name === roomName)) {
+                state.currentInspection.rooms.push(newRoom);
+              }
+            }
+          });
+        });
+        
+        // Optionally, show a quick alert
+        alert("Form file parsed! Inspection details have been auto-filled.");
+        
+        // If the user is on the start screen, we might proceed them automatically:
+        elements.startScreen.classList.remove('active');
+        elements.mainInterface.classList.add('active');
+        createPropertyDetailsWindow(true); // maybe skip the normal flow
+      }
+      
       // Start a new inspection
       function startNewInspection() {
-        // Create a new inspection object
         state.currentInspection = {
           id: generateId(),
           date: new Date().toISOString(),
@@ -1360,13 +1507,11 @@
         
         // Create property details window
         createPropertyDetailsWindow();
-        
-        // Play sound
         playSound('window-open');
       }
       
       // Create property details window
-      function createPropertyDetailsWindow() {
+      function createPropertyDetailsWindow(skipAnimation = false) {
         const windowId = `window-property-${state.nextWindowId++}`;
         const windowHtml = `
           <div id="${windowId}" class="window" style="top: 50px; left: 50px; width: 500px;">
@@ -1382,22 +1527,22 @@
               <form id="property-form">
                 <div class="form-group">
                   <label class="form-label" for="property-address">Property Address</label>
-                  <input type="text" id="property-address" class="form-input" required>
+                  <input type="text" id="property-address" class="form-input" required value="${state.currentInspection.propertyAddress || ''}">
                 </div>
                 
                 <div class="form-group">
                   <label class="form-label" for="inspection-date">Inspection Date</label>
-                  <input type="date" id="inspection-date" class="form-input" value="${new Date().toISOString().split('T')[0]}" required>
+                  <input type="date" id="inspection-date" class="form-input" required>
                 </div>
                 
                 <div class="form-group">
                   <label class="form-label" for="agent-name">Agent Name</label>
-                  <input type="text" id="agent-name" class="form-input" required>
+                  <input type="text" id="agent-name" class="form-input" required value="${state.currentInspection.agentName || ''}">
                 </div>
                 
                 <div class="form-group">
                   <label class="form-label" for="tenant-name">Tenant Name</label>
-                  <input type="text" id="tenant-name" class="form-input" required>
+                  <input type="text" id="tenant-name" class="form-input" required value="${state.currentInspection.tenantName || ''}">
                 </div>
                 
                 <button type="submit" class="start-btn">Continue to Inspection</button>
@@ -1408,7 +1553,6 @@
         
         elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
         
-        // Set up event listeners for the window
         const windowEl = document.getElementById(windowId);
         
         // Window controls
@@ -1416,29 +1560,37 @@
         windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
         windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
         
-        // Form submission
-        windowEl.querySelector('#property-form').addEventListener('submit', (e) => {
+        // Form
+        const propertyForm = windowEl.querySelector('#property-form');
+        const dateEl = propertyForm.querySelector('#inspection-date');
+        // If we already have a date that is in correct format, parse it
+        let currentDate = "";
+        try {
+          const d = new Date(state.currentInspection.date);
+          if (!isNaN(d.getTime())) {
+            currentDate = d.toISOString().split('T')[0];
+          }
+        } catch {}
+        dateEl.value = currentDate || new Date().toISOString().split('T')[0];
+        
+        propertyForm.addEventListener('submit', (e) => {
           e.preventDefault();
           
-          // Save property details
-          state.currentInspection.propertyAddress = document.getElementById('property-address').value;
-          state.currentInspection.date = document.getElementById('inspection-date').value;
-          state.currentInspection.agentName = document.getElementById('agent-name').value;
-          state.currentInspection.tenantName = document.getElementById('tenant-name').value;
+          state.currentInspection.propertyAddress = propertyForm.querySelector('#property-address').value;
+          state.currentInspection.date = propertyForm.querySelector('#inspection-date').value;
+          state.currentInspection.agentName = propertyForm.querySelector('#agent-name').value;
+          state.currentInspection.tenantName = propertyForm.querySelector('#tenant-name').value;
           
-          // Close property window
           closeWindow(windowId);
-          
-          // Create rooms management window
           createRoomsManagementWindow();
         });
         
-        // Add window to state and bring to front
         state.windows.push(windowId);
         bringWindowToFront(windowId);
         
-        // Animate window opening
-        windowEl.classList.add('animate-pop');
+        if (!skipAnimation) {
+          windowEl.classList.add('animate-pop');
+        }
       }
       
       // Create rooms management window
@@ -1481,58 +1633,45 @@
         
         elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
         
-        // Set up event listeners for the window
         const windowEl = document.getElementById(windowId);
         
-        // Window controls
         windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
         windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
         windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
         
-        // Add room button
+        // Add room
         windowEl.querySelector('#add-room-btn').addEventListener('click', addNewRoom);
         
-        // Signatures button
+        // Signatures
         windowEl.querySelector('#signatures-btn').addEventListener('click', () => {
           createSignaturesWindow();
         });
         
-        // Add window to state and bring to front
         state.windows.push(windowId);
         bringWindowToFront(windowId);
-        
-        // Animate window opening
         windowEl.classList.add('animate-pop');
-        
-        // Play sound
         playSound('window-open');
         
-        // Event delegation for room list
         const roomList = windowEl.querySelector('#room-list');
         roomList.addEventListener('click', (e) => {
           const target = e.target;
+          if (!target) return;
           
-          // If user clicked the row or .room-name, open the room
           if (target.classList.contains('room-name') || target.parentElement.classList.contains('room-item')) {
-            const roomItem = target.closest('.room-item');
-            if (!roomItem) return;
-            const roomId = roomItem.dataset.id;
-            createRoomInspectionWindow(roomId);
+            const item = target.closest('.room-item');
+            if (!item) return;
+            createRoomInspectionWindow(item.dataset.id);
           }
           
-          // Check if edit button was clicked
           if (target.classList.contains('edit-btn') || target.parentElement.classList.contains('edit-btn')) {
-            const roomItem = target.closest('.room-item');
-            const roomId = roomItem.dataset.id;
-            createRoomInspectionWindow(roomId);
+            const item = target.closest('.room-item');
+            createRoomInspectionWindow(item.dataset.id);
             e.stopPropagation();
           }
           
-          // Check if delete button was clicked
           if (target.classList.contains('delete-btn') || target.parentElement.classList.contains('delete-btn')) {
-            const roomItem = target.closest('.room-item');
-            const roomId = roomItem.dataset.id;
-            deleteRoom(roomId);
+            const item = target.closest('.room-item');
+            deleteRoom(item.dataset.id);
             e.stopPropagation();
           }
         });
@@ -1540,10 +1679,9 @@
       
       // Render rooms list
       function renderRoomsList() {
-        if (!state.currentInspection || state.currentInspection.rooms.length === 0) {
+        if (!state.currentInspection || !state.currentInspection.rooms.length) {
           return '<li class="room-item-empty">No rooms added yet.</li>';
         }
-        
         return state.currentInspection.rooms.map(room => `
           <li class="room-item ${room.urgent ? 'urgent' : ''}" data-id="${room.id}">
             <div class="room-name">${room.name}</div>
@@ -1559,64 +1697,46 @@
         `).join('');
       }
       
-      // Add a new room
       function addNewRoom() {
-        const newRoomNameInput = document.getElementById('new-room-name');
-        const roomName = newRoomNameInput.value.trim();
-        
-        if (roomName === '') {
-          newRoomNameInput.classList.add('animate-shake');
-          setTimeout(() => {
-            newRoomNameInput.classList.remove('animate-shake');
-          }, 300);
+        const input = document.getElementById('new-room-name');
+        const val = (input.value || "").trim();
+        if (!val) {
+          input.classList.add('animate-shake');
+          setTimeout(() => input.classList.remove('animate-shake'), 300);
           return;
         }
         
-        // Create a new room object
         const newRoom = {
           id: generateId(),
-          name: roomName,
+          name: val,
           condition: 5,
-          notes: '',
+          notes: "",
           photos: [],
           urgent: false
         };
-        
-        // Add to current inspection
         state.currentInspection.rooms.push(newRoom);
         
-        // Update the rooms list
         const roomList = document.getElementById('room-list');
         roomList.innerHTML = renderRoomsList();
-        
-        // Clear the input
-        newRoomNameInput.value = '';
-        
-        // Play sound
+        input.value = "";
         playSound('pop');
         
-        // Automatically open the new room's inspection window
+        // auto-open
         createRoomInspectionWindow(newRoom.id);
       }
       
-      // Delete a room
       function deleteRoom(roomId) {
-        const roomIndex = state.currentInspection.rooms.findIndex(room => room.id === roomId);
-        if (roomIndex !== -1) {
-          state.currentInspection.rooms.splice(roomIndex, 1);
-          
-          // Update the rooms list
+        const idx = state.currentInspection.rooms.findIndex(r => r.id === roomId);
+        if (idx !== -1) {
+          state.currentInspection.rooms.splice(idx, 1);
           const roomList = document.getElementById('room-list');
           if (roomList) {
             roomList.innerHTML = renderRoomsList();
           }
-          
-          // Play sound
           playSound('trash');
         }
       }
       
-      // Create room inspection window
       function createRoomInspectionWindow(roomId) {
         const room = state.currentInspection.rooms.find(r => r.id === roomId);
         if (!room) return;
@@ -1674,16 +1794,15 @@
         
         const windowEl = document.getElementById(windowId);
         
-        // Window controls
         windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
         windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
         windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
         
         // Condition slider
-        const conditionSlider = windowEl.querySelector(`#room-condition-${roomId}`);
-        const conditionValue = windowEl.querySelector(`#room-condition-value-${roomId}`);
-        conditionSlider.addEventListener('input', () => {
-          conditionValue.textContent = `${conditionSlider.value}/10`;
+        const slider = windowEl.querySelector(`#room-condition-${roomId}`);
+        const valEl = windowEl.querySelector(`#room-condition-value-${roomId}`);
+        slider.addEventListener('input', () => {
+          valEl.textContent = `${slider.value}/10`;
         });
         
         // Urgent toggle
@@ -1692,7 +1811,7 @@
           urgentToggle.classList.toggle('active');
         });
         
-        // File dropzone
+        // Photos
         const dropzone = windowEl.querySelector(`#dropzone-${roomId}`);
         const fileInput = windowEl.querySelector(`#file-input-${roomId}`);
         
@@ -1701,100 +1820,79 @@
           e.preventDefault();
           dropzone.classList.add('active');
         });
-        dropzone.addEventListener('dragleave', () => {
-          dropzone.classList.remove('active');
-        });
+        dropzone.addEventListener('dragleave', () => dropzone.classList.remove('active'));
         dropzone.addEventListener('drop', (e) => {
           e.preventDefault();
           dropzone.classList.remove('active');
           if (e.dataTransfer.files.length) {
-            handleFiles(e.dataTransfer.files, roomId);
+            handleRoomPhotos(e.dataTransfer.files, roomId);
           }
         });
         fileInput.addEventListener('change', () => {
           if (fileInput.files.length) {
-            handleFiles(fileInput.files, roomId);
+            handleRoomPhotos(fileInput.files, roomId);
           }
         });
         
-        // Save room button
+        // Save
         windowEl.querySelector(`#save-room-btn-${roomId}`).addEventListener('click', () => {
-          // Update room data
-          room.condition = parseInt(conditionSlider.value);
+          room.condition = parseInt(slider.value);
           room.notes = windowEl.querySelector(`#room-notes-${roomId}`).value;
           room.urgent = urgentToggle.classList.contains('active');
           
-          // Update the rooms list in the management window
-          const roomsListEl = document.getElementById('room-list');
-          if (roomsListEl) {
-            roomsListEl.innerHTML = renderRoomsList();
+          const list = document.getElementById('room-list');
+          if (list) {
+            list.innerHTML = renderRoomsList();
           }
-          
-          // Close the window
           closeWindow(windowId);
-          
-          // Play sound
           playSound('save');
         });
         
-        // Add window to state and bring to front
         state.windows.push(windowId);
         bringWindowToFront(windowId);
-        
-        // Animate window opening
         windowEl.classList.add('animate-pop');
-        
-        // Play sound
         playSound('window-open');
       }
       
-      // Handle file uploads
-      function handleFiles(files, roomId) {
+      function handleRoomPhotos(files, roomId) {
         const room = state.currentInspection.rooms.find(r => r.id === roomId);
         if (!room) return;
         
         Array.from(files).forEach(file => {
-          if (!file.type.match('image.*')) return; // skip non-images
+          if (!file.type.match('image.*')) return;
           
           const reader = new FileReader();
           reader.onload = (e) => {
-            const photoId = generateId();
+            const pid = generateId();
             room.photos.push({
-              id: photoId,
+              id: pid,
               data: e.target.result,
               name: file.name
             });
             
-            // Re-render photo previews
             const previewsEl = document.getElementById(`photo-previews-${roomId}`);
             if (previewsEl) {
               previewsEl.innerHTML = renderPhotoPreviewsHtml(room.photos);
-              // Re-bind delete buttons
               previewsEl.querySelectorAll('.photo-delete-btn').forEach(btn => {
-                btn.addEventListener('click', (evt) => {
-                  const pid = evt.currentTarget.dataset.id;
-                  deletePhoto(roomId, pid);
+                btn.addEventListener('click', (ev) => {
+                  const pId = ev.currentTarget.dataset.id;
+                  deletePhoto(roomId, pId);
                 });
               });
             }
-            
             playSound('camera');
           };
           reader.readAsDataURL(file);
         });
       }
       
-      // Render photo previews HTML
       function renderPhotoPreviewsHtml(photos) {
-        if (!photos || photos.length === 0) {
-          return '<p>No photos added yet.</p>';
-        }
-        
+        if (!photos || !photos.length) return '<p>No photos added yet.</p>';
         return `
           <div class="photo-grid">
             ${photos.map(photo => `
               <div class="photo-item">
-                <img src="${photo.data}" alt="${photo.name}" class="image-preview">
+                <img src="${photo.data}" alt="${photo.name}" class="image-preview" />
                 <button class="photo-delete-btn" data-id="${photo.id}">
                   <i class="fas fa-times"></i>
                 </button>
@@ -1804,32 +1902,27 @@
         `;
       }
       
-      // Delete a photo
       function deletePhoto(roomId, photoId) {
         const room = state.currentInspection.rooms.find(r => r.id === roomId);
         if (!room) return;
-        
-        const photoIndex = room.photos.findIndex(p => p.id === photoId);
-        if (photoIndex !== -1) {
-          room.photos.splice(photoIndex, 1);
-          
+        const idx = room.photos.findIndex(p => p.id === photoId);
+        if (idx !== -1) {
+          room.photos.splice(idx, 1);
           const previewsEl = document.getElementById(`photo-previews-${roomId}`);
           if (previewsEl) {
             previewsEl.innerHTML = renderPhotoPreviewsHtml(room.photos);
-            // Re-bind delete buttons
             previewsEl.querySelectorAll('.photo-delete-btn').forEach(btn => {
-              btn.addEventListener('click', (evt) => {
-                const pid = evt.currentTarget.dataset.id;
-                deletePhoto(roomId, pid);
+              btn.addEventListener('click', (ev) => {
+                const pId = ev.currentTarget.dataset.id;
+                deletePhoto(roomId, pId);
               });
             });
           }
-          
           playSound('trash');
         }
       }
       
-      // Create signatures window
+      // Signatures window
       function createSignaturesWindow() {
         const windowId = `window-signatures-${state.nextWindowId++}`;
         const windowHtml = `
@@ -1873,30 +1966,21 @@
         
         const windowEl = document.getElementById(windowId);
         
-        // Window controls
         windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
         windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
         windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
         
-        // Set up signature canvases
         setupSignatureCanvas('tenant-signature', 'tenant-clear-btn');
         setupSignatureCanvas('agent-signature', 'agent-clear-btn');
         
-        // Complete inspection button
         windowEl.querySelector('#complete-inspection-btn').addEventListener('click', completeInspection);
         
-        // Add window to state and bring to front
         state.windows.push(windowId);
         bringWindowToFront(windowId);
-        
-        // Animate window opening
         windowEl.classList.add('animate-pop');
-        
-        // Play sound
         playSound('window-open');
       }
       
-      // Set up signature canvas
       function setupSignatureCanvas(canvasId, clearBtnId) {
         const canvas = document.getElementById(canvasId);
         const ctx = canvas.getContext('2d');
@@ -1904,19 +1988,16 @@
         let lastX = 0;
         let lastY = 0;
         
-        // Basic pen settings
         ctx.lineJoin = 'round';
         ctx.lineCap = 'round';
         ctx.lineWidth = 2;
         ctx.strokeStyle = '#000000';
         
-        // Mouse-based
         canvas.addEventListener('mousedown', startDrawing);
         canvas.addEventListener('mousemove', draw);
         canvas.addEventListener('mouseup', stopDrawing);
         canvas.addEventListener('mouseout', stopDrawing);
         
-        // Touch-based
         canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
         canvas.addEventListener('touchmove', drawTouch, { passive: false });
         canvas.addEventListener('touchend', stopDrawing);
@@ -1945,16 +2026,16 @@
           e.preventDefault();
           isDrawing = true;
           const rect = canvas.getBoundingClientRect();
-          const touch = e.touches[0];
-          [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
+          const t = e.touches[0];
+          [lastX, lastY] = [t.clientX - rect.left, t.clientY - rect.top];
         }
         function drawTouch(e) {
           if (!isDrawing) return;
           e.preventDefault();
           const rect = canvas.getBoundingClientRect();
-          const touch = e.touches[0];
-          const x = touch.clientX - rect.left;
-          const y = touch.clientY - rect.top;
+          const t = e.touches[0];
+          const x = t.clientX - rect.left;
+          const y = t.clientY - rect.top;
           ctx.beginPath();
           ctx.moveTo(lastX, lastY);
           ctx.lineTo(x, y);
@@ -1963,26 +2044,18 @@
         }
       }
       
-      // Complete the inspection
       function completeInspection() {
-        // Get signature data
-        const tenantSigCanvas = document.getElementById('tenant-signature');
-        const agentSigCanvas = document.getElementById('agent-signature');
+        const tenantSig = document.getElementById('tenant-signature');
+        const agentSig = document.getElementById('agent-signature');
         
-        state.currentInspection.tenantSignature = tenantSigCanvas.toDataURL();
-        state.currentInspection.agentSignature = agentSigCanvas.toDataURL();
+        state.currentInspection.tenantSignature = tenantSig.toDataURL();
+        state.currentInspection.agentSignature = agentSig.toDataURL();
         
-        // Save the inspection
         saveCurrentInspection();
-        
-        // Open summary window
         createSummaryWindow();
-        
-        // Play sound
         playSound('success');
       }
       
-      // Create summary window
       function createSummaryWindow() {
         const windowId = `window-summary-${state.nextWindowId++}`;
         const windowHtml = `
@@ -2030,112 +2103,82 @@
         `;
         
         elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
-        
         const windowEl = document.getElementById(windowId);
         
-        // Window controls
         windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
         windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
         windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
         
-        // Export PDF button
         windowEl.querySelector('#export-pdf-summary-btn').addEventListener('click', exportToPDF);
-        // Generate QR Code button
         windowEl.querySelector('#generate-qr-btn').addEventListener('click', generateQRCode);
-        // Return home button
         windowEl.querySelector('#return-home-btn').addEventListener('click', returnToHome);
         
-        // Add window to state and bring to front
         state.windows.push(windowId);
         bringWindowToFront(windowId);
-        
-        // Animate window opening
         windowEl.classList.add('animate-pop');
-        
-        // Play sound
         playSound('window-open');
       }
       
-      // Generate QR Code
       function generateQRCode() {
         const qrContainer = document.getElementById('qrcode-container');
         qrContainer.style.display = 'block';
         qrContainer.innerHTML = '';
         
-        // Example data to encode in QR
-        const inspectionData = {
+        const data = {
           id: state.currentInspection.id,
           propertyAddress: state.currentInspection.propertyAddress,
           date: state.currentInspection.date
         };
         
-        const dataUrl = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(inspectionData))}`;
-        
+        const dataUrl = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(data))}`;
         new QRCode(qrContainer, {
           text: dataUrl,
           width: 200,
           height: 200
         });
-        
         playSound('pop');
       }
       
-      // Save the current inspection
       function saveCurrentInspection() {
         if (!state.currentInspection) return;
-        
-        const existingIndex = state.savedInspections.findIndex(ins => ins.id === state.currentInspection.id);
-        if (existingIndex !== -1) {
-          // Update
-          state.savedInspections[existingIndex] = { ...state.currentInspection };
+        const idx = state.savedInspections.findIndex(i => i.id === state.currentInspection.id);
+        if (idx !== -1) {
+          state.savedInspections[idx] = { ...state.currentInspection };
         } else {
-          // Insert
           state.savedInspections.push({ ...state.currentInspection });
         }
         saveStateToLocalStorage();
-        
         playSound('save');
       }
       
-      // Load a saved inspection
       function loadInspection(inspectionId) {
-        const inspection = state.savedInspections.find(ins => ins.id === inspectionId);
-        if (!inspection) return;
+        const found = state.savedInspections.find(i => i.id === inspectionId);
+        if (!found) return;
+        state.currentInspection = { ...found };
         
-        state.currentInspection = { ...inspection };
-        
-        // Switch to main interface
         elements.startScreen.classList.remove('active');
         elements.mainInterface.classList.add('active');
-        
-        // Create the rooms management window
         createRoomsManagementWindow();
-        
         playSound('window-open');
       }
       
-      // Delete a saved inspection
       function deleteInspection(inspectionId) {
-        const index = state.savedInspections.findIndex(ins => ins.id === inspectionId);
-        if (index !== -1) {
-          state.savedInspections.splice(index, 1);
+        const idx = state.savedInspections.findIndex(i => i.id === inspectionId);
+        if (idx !== -1) {
+          state.savedInspections.splice(idx, 1);
           saveStateToLocalStorage();
           
-          // Re-render saved list
-          const reportsList = document.getElementById('saved-reports-list');
-          if (reportsList) {
-            reportsList.innerHTML = renderSavedReportsList();
+          const list = document.getElementById('saved-reports-list');
+          if (list) {
+            list.innerHTML = renderSavedReportsList();
           }
-          
           playSound('trash');
         }
       }
       
-      // Export the inspection to PDF
       function exportToPDF() {
         if (!state.currentInspection) return;
         
-        // Create a new window for PDF content
         const pdfWindowId = `window-pdf-${state.nextWindowId++}`;
         const pdfWindowHtml = `
           <div id="${pdfWindowId}" class="window" style="top: 50px; left: 50px; width: 800px; height: 600px;">
@@ -2174,8 +2217,8 @@
                               <div>
                                 <p><strong>Photos:</strong></p>
                                 <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                                  ${room.photos.map(photo => `
-                                    <img src="${photo.data}" alt="${photo.name}" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
+                                  ${room.photos.map(p => `
+                                    <img src="${p.data}" alt="${p.name}" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
                                   `).join('')}
                                 </div>
                               </div>`
@@ -2219,14 +2262,11 @@
         
         elements.desktop.insertAdjacentHTML('beforeend', pdfWindowHtml);
         
-        // Add window to state and bring to front
         state.windows.push(pdfWindowId);
         bringWindowToFront(pdfWindowId);
         
-        // Close button
         document.querySelector(`#${pdfWindowId} .window-close`).addEventListener('click', () => closeWindow(pdfWindowId));
         
-        // Generate the PDF after a brief delay
         setTimeout(() => {
           const element = document.getElementById('pdf-content');
           const opt = {
@@ -2238,34 +2278,26 @@
           };
           
           html2pdf().set(opt).from(element).save().then(() => {
-            // Update window title
             const titleEl = document.querySelector(`#${pdfWindowId} .window-title`);
-            if (titleEl) {
-              titleEl.textContent = 'PDF Generated';
-            }
-            // Play sound
+            if (titleEl) titleEl.textContent = 'PDF Generated';
             playSound('success');
           });
         }, 1000);
       }
       
-      // Return to home screen
       function returnToHome() {
         closeAllWindows();
         elements.mainInterface.classList.remove('active');
         elements.startScreen.classList.add('active');
         state.currentInspection = null;
-        
         playSound('back');
       }
       
-      // Toggle settings panel
       function toggleSettingsPanel() {
         elements.settingsPanel.classList.toggle('active');
         playSound('click');
       }
       
-      // Toggle dark mode
       function toggleDarkMode() {
         state.darkMode = !state.darkMode;
         document.getElementById('dark-mode-toggle').classList.toggle('active', state.darkMode);
@@ -2274,7 +2306,6 @@
         playSound('click');
       }
       
-      // Toggle high contrast
       function toggleHighContrast() {
         state.highContrast = !state.highContrast;
         document.getElementById('high-contrast-toggle').classList.toggle('active', state.highContrast);
@@ -2283,7 +2314,6 @@
         playSound('click');
       }
       
-      // Decrease font size
       function decreaseFontSize() {
         if (state.fontSize > 1) {
           document.body.classList.remove(`font-size-${state.fontSize}`);
@@ -2294,7 +2324,6 @@
         }
       }
       
-      // Reset font size
       function resetFontSize() {
         document.body.classList.remove(`font-size-${state.fontSize}`);
         state.fontSize = 2;
@@ -2303,7 +2332,6 @@
         playSound('click');
       }
       
-      // Increase font size
       function increaseFontSize() {
         if (state.fontSize < 3) {
           document.body.classList.remove(`font-size-${state.fontSize}`);
@@ -2314,11 +2342,9 @@
         }
       }
       
-      // Load default rooms
       function loadDefaultRooms() {
         if (!state.currentInspection) return;
-        
-        const defaultRooms = [
+        const defaults = [
           { name: 'Kitchen', condition: 5, notes: '', photos: [], urgent: false },
           { name: 'Living Room', condition: 5, notes: '', photos: [], urgent: false },
           { name: 'Bedroom 1', condition: 5, notes: '', photos: [], urgent: false },
@@ -2328,151 +2354,123 @@
           { name: 'Garden', condition: 5, notes: '', photos: [], urgent: false }
         ];
         
-        defaultRooms.forEach(room => {
-          // Skip if this room name already exists
-          if (!state.currentInspection.rooms.some(r => r.name === room.name)) {
+        defaults.forEach(rm => {
+          if (!state.currentInspection.rooms.some(r => r.name === rm.name)) {
             state.currentInspection.rooms.push({
               id: generateId(),
-              ...room
+              ...rm
             });
           }
         });
         
-        // Update rooms list
-        const roomList = document.getElementById('room-list');
-        if (roomList) {
-          roomList.innerHTML = renderRoomsList();
+        const list = document.getElementById('room-list');
+        if (list) {
+          list.innerHTML = renderRoomsList();
         }
-        
-        // Close settings panel
         toggleSettingsPanel();
-        
         playSound('success');
       }
       
-      /* ============================
-         WINDOW MANAGEMENT FUNCTIONS
-      ============================ */
+      /* ============ Window Management ============ */
       function closeWindow(windowId) {
-        const win = document.getElementById(windowId);
-        if (!win) return;
+        const w = document.getElementById(windowId);
+        if (!w) return;
         
-        // Animate close
-        win.classList.add('animate-pop');
-        win.style.opacity = 0;
-        win.style.transform = 'scale(0.9)';
+        w.classList.add('animate-pop');
+        w.style.opacity = 0;
+        w.style.transform = 'scale(0.9)';
         
         setTimeout(() => {
-          win.remove();
+          w.remove();
           const idx = state.windows.indexOf(windowId);
-          if (idx !== -1) {
-            state.windows.splice(idx, 1);
-          }
+          if (idx !== -1) state.windows.splice(idx, 1);
         }, 300);
-        
         playSound('window-close');
       }
       
       function minimizeWindow(windowId) {
-        const win = document.getElementById(windowId);
-        if (!win) return;
+        const w = document.getElementById(windowId);
+        if (!w) return;
         
-        win.classList.toggle('minimized');
-        if (win.classList.contains('minimized')) {
-          // Save current size/position
-          win.setAttribute('data-prev-height', win.style.height || 'auto');
-          win.setAttribute('data-prev-width', win.style.width || 'auto');
-          win.setAttribute('data-prev-top', win.style.top || '0');
-          win.setAttribute('data-prev-left', win.style.left || '0');
+        w.classList.toggle('minimized');
+        if (w.classList.contains('minimized')) {
+          w.setAttribute('data-prev-height', w.style.height || 'auto');
+          w.setAttribute('data-prev-width', w.style.width || 'auto');
+          w.setAttribute('data-prev-top', w.style.top || '0');
+          w.setAttribute('data-prev-left', w.style.left || '0');
           
-          // Minimize
-          win.style.height = '40px';
-          win.style.width = '200px';
-          win.style.top = 'calc(100% - 50px)';
+          w.style.height = '40px';
+          w.style.width = '200px';
+          w.style.top = 'calc(100% - 50px)';
           const offset = state.windows.indexOf(windowId) * 210;
-          win.style.left = `${offset}px`;
+          w.style.left = `${offset}px`;
           
-          // Hide content
-          const content = win.querySelector('.window-content');
-          if (content) content.style.display = 'none';
+          const c = w.querySelector('.window-content');
+          if (c) c.style.display = 'none';
         } else {
-          // Restore
-          win.style.height = win.getAttribute('data-prev-height');
-          win.style.width = win.getAttribute('data-prev-width');
-          win.style.top = win.getAttribute('data-prev-top');
-          win.style.left = win.getAttribute('data-prev-left');
-          const content = win.querySelector('.window-content');
-          if (content) content.style.display = 'block';
+          w.style.height = w.getAttribute('data-prev-height');
+          w.style.width = w.getAttribute('data-prev-width');
+          w.style.top = w.getAttribute('data-prev-top');
+          w.style.left = w.getAttribute('data-prev-left');
+          
+          const c = w.querySelector('.window-content');
+          if (c) c.style.display = 'block';
         }
-        
         playSound('click');
       }
       
       function maximizeWindow(windowId) {
-        const win = document.getElementById(windowId);
-        if (!win) return;
+        const w = document.getElementById(windowId);
+        if (!w) return;
         
-        win.classList.toggle('maximized');
-        if (win.classList.contains('maximized')) {
-          // Save current size/position
-          win.setAttribute('data-prev-height', win.style.height || 'auto');
-          win.setAttribute('data-prev-width', win.style.width || 'auto');
-          win.setAttribute('data-prev-top', win.style.top || '0');
-          win.setAttribute('data-prev-left', win.style.left || '0');
+        w.classList.toggle('maximized');
+        if (w.classList.contains('maximized')) {
+          w.setAttribute('data-prev-height', w.style.height || 'auto');
+          w.setAttribute('data-prev-width', w.style.width || 'auto');
+          w.setAttribute('data-prev-top', w.style.top || '0');
+          w.setAttribute('data-prev-left', w.style.left || '0');
           
-          // Maximize
-          win.style.height = 'calc(100% - 50px)';
-          win.style.width = '100%';
-          win.style.top = '0';
-          win.style.left = '0';
+          w.style.height = 'calc(100% - 50px)';
+          w.style.width = '100%';
+          w.style.top = '0';
+          w.style.left = '0';
         } else {
-          // Restore
-          win.style.height = win.getAttribute('data-prev-height');
-          win.style.width = win.getAttribute('data-prev-width');
-          win.style.top = win.getAttribute('data-prev-top');
-          win.style.left = win.getAttribute('data-prev-left');
+          w.style.height = w.getAttribute('data-prev-height');
+          w.style.width = w.getAttribute('data-prev-width');
+          w.style.top = w.getAttribute('data-prev-top');
+          w.style.left = w.getAttribute('data-prev-left');
         }
-        
         playSound('click');
       }
       
       function closeAllWindows() {
-        // Copy the array (since closeWindow modifies it)
-        const allWindows = [...state.windows];
-        allWindows.forEach(winId => closeWindow(winId));
+        const cloneWindows = [...state.windows];
+        cloneWindows.forEach(winId => closeWindow(winId));
       }
       
       function bringWindowToFront(windowId) {
-        const win = document.getElementById(windowId);
-        if (!win) return;
+        const w = document.getElementById(windowId);
+        if (!w) return;
         
         state.zIndex += 1;
-        win.style.zIndex = state.zIndex;
+        w.style.zIndex = state.zIndex;
         
-        // Also ensure .active style for "top" window
-        // Could remove active from others if you want only one active at a time
         state.windows.forEach(id => {
-          const w = document.getElementById(id);
-          if (w) w.classList.remove('active');
+          const w2 = document.getElementById(id);
+          if (w2) w2.classList.remove('active');
         });
-        win.classList.add('active');
+        w.classList.add('active');
       }
       
-      /* ============================
-         HELPER FUNCTIONS
-      ============================ */
+      /* ============ Helpers ============ */
       function generateId() {
         return '_' + Math.random().toString(36).substr(2, 9);
       }
-      
-      // Basic placeholder for sound feedback
       function playSound(type) {
-        // If you want actual sounds, you can embed <audio> elements or use beep noises.
-        // For now, just log to console or do nothing.
-        // console.log(`Playing sound: ${type}`);
+        // placeholder for real audio if desired
       }
       
-      // Start everything
+      // Start
       init();
     });
   </script>
