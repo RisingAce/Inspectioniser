@@ -1797,7 +1797,7 @@
         const tgt = e.target;
         const x = (parseFloat(tgt.getAttribute('data-x'))||0)+ e.dx;
         const y = (parseFloat(tgt.getAttribute('data-y'))||0)+ e.dy;
-        tgt.style.transform=\`translate(\${x}px,\${y}px)\`;
+        tgt.style.transform = 'translate(' + x + 'px, ' + y + 'px)';
         tgt.setAttribute('data-x',x);
         tgt.setAttribute('data-y',y);
       }
