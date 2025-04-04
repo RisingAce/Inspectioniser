@@ -1,2506 +1,2480 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>InspectSpace • Property Inspection Tool</title>
-    <!-- External dependencies -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.17/interact.min.js"></script>
-    <style>
-        /* === GLOBAL STYLES === */
-        :root {
-            /* Light mode colors */
-            --bg-primary: #f0f0ea;
-            --bg-secondary: #e8e8dd;
-            --bg-window: #ffffff;
-            --text-primary: #232320;
-            --text-secondary: #46463e;
-            --accent-primary: #6d8a96;
-            --accent-secondary: #9bc995;
-            --accent-tertiary: #e7a75c;
-            --border-color: #2c2c2a;
-            --window-header: #7c90ac;
-            --window-shadow: rgba(0, 0, 0, 0.2);
-            --window-border: #242424;
-            --success: #66a182;
-            --error: #d35d6e;
-            --warning: #e7a75c;
-            
-            /* Size variables */
-            --window-radius: 6px;
-            --border-width: 2px;
-            --button-radius: 5px;
-            
-            /* Typography */
-            --font-heading: 'Arial Black', Gadget, sans-serif;
-            --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            
-            /* Transitions */
-            --transition-speed: 0.2s;
-        }
-
-        [data-theme="dark"] {
-            --bg-primary: #212125;
-            --bg-secondary: #2c2c30;
-            --bg-window: #343438;
-            --text-primary: #e8e8e0;
-            --text-secondary: #b8b8b0;
-            --accent-primary: #7c9eb3;
-            --accent-secondary: #86b375;
-            --accent-tertiary: #e7b979;
-            --border-color: #5c5c5a;
-            --window-header: #546180;
-            --window-shadow: rgba(0, 0, 0, 0.4);
-            --window-border: #4a4a4a;
-        }
-
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-
-        html, body {
-            width: 100%;
-            height: 100%;
-            font-family: var(--font-body);
-            background-color: var(--bg-primary);
-            color: var(--text-primary);
-            font-size: 16px;
-            line-height: 1.5;
-            overflow: hidden;
-            transition: background-color var(--transition-speed), color var(--transition-speed);
-        }
-
-        /* === TYPOGRAPHY === */
-        h1, h2, h3, h4, h5 {
-            font-family: var(--font-heading);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            font-weight: 900;
-        }
-
-        h1 {
-            font-size: 3.2rem;
-            line-height: 1.2;
-            margin-bottom: 1rem;
-        }
-
-        h2 {
-            font-size: 2.2rem;
-            margin-bottom: 1rem;
-        }
-
-        h3 {
-            font-size: 1.6rem;
-            margin-bottom: 0.75rem;
-        }
-
-        p {
-            margin-bottom: 1rem;
-        }
-
-        /* === BUTTONS === */
-        button, .btn {
-            font-family: var(--font-heading);
-            font-weight: bold;
-            font-size: 1rem;
-            text-transform: uppercase;
-            padding: 0.75rem 1.5rem;
-            background-color: var(--accent-primary);
-            color: var(--bg-primary);
-            border: var(--border-width) solid var(--border-color);
-            border-radius: var(--button-radius);
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            box-shadow: 4px 4px 0 var(--border-color);
-            margin: 0.5rem;
-            letter-spacing: 0.05em;
-        }
-
-        button:hover, .btn:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 2px 2px 0 var(--border-color);
-            filter: brightness(1.1);
-        }
-
-        button:active, .btn:active {
-            transform: translate(4px, 4px);
-            box-shadow: none;
-            filter: brightness(0.9);
-        }
-
-        .start-btn {
-            font-size: 1.2rem;
-            background-color: var(--accent-secondary);
-            padding: 1rem 2rem;
-            box-shadow: 5px 5px 0 var(--border-color);
-        }
-
-        .start-btn:hover {
-            transform: translate(2px, 2px);
-            box-shadow: 3px 3px 0 var(--border-color);
-        }
-
-        .start-btn:active {
-            transform: translate(5px, 5px);
-            box-shadow: none;
-        }
-
-        /* === FORMS === */
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-label {
-            display: block;
-            font-family: var(--font-heading);
-            font-weight: bold;
-            text-transform: uppercase;
-            margin-bottom: 0.5rem;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            letter-spacing: 0.05em;
-        }
-
-        .form-input, .form-textarea, .form-select {
-            width: 100%;
-            padding: 0.75rem;
-            background-color: var(--bg-window);
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 4px;
-            font-family: var(--font-body);
-            font-size: 1rem;
-            color: var(--text-primary);
-            transition: all var(--transition-speed);
-        }
-
-        .form-input:focus, .form-textarea:focus, .form-select:focus {
-            outline: none;
-            border-color: var(--accent-primary);
-            box-shadow: 0 0 0 2px rgba(109, 138, 150, 0.3);
-        }
-
-        .form-textarea {
-            min-height: 100px;
-            resize: vertical;
-        }
-
-        /* === TOGGLE SWITCH === */
-        .toggle {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            user-select: none;
-            padding: 0.5rem;
-            border-radius: 4px;
-            transition: all var(--transition-speed);
-        }
-
-        .toggle:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .toggle-switch {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 24px;
-            background-color: var(--bg-secondary);
-            border-radius: 12px;
-            margin-right: 10px;
-            transition: all var(--transition-speed);
-            border: var(--border-width) solid var(--border-color);
-        }
-
-        .toggle-switch::after {
-            content: '';
-            position: absolute;
-            width: 18px;
-            height: 18px;
-            border-radius: 50%;
-            background-color: var(--bg-primary);
-            top: 1px;
-            left: 1px;
-            transition: all var(--transition-speed);
-            border: var(--border-width) solid var(--border-color);
-        }
-
-        .toggle.active .toggle-switch {
-            background-color: var(--accent-primary);
-        }
-
-        .toggle.active .toggle-switch::after {
-            transform: translateX(16px);
-            background-color: var(--bg-window);
-        }
-
-        /* === LAYOUT === */
-        .app {
-            width: 100%;
-            height: 100%;
-            position: relative;
-        }
-
-        .start-screen {
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            padding: 2rem;
-            background-color: var(--bg-primary);
-            transition: opacity var(--transition-speed), transform var(--transition-speed);
-            position: absolute;
-            top: 0;
-            left: 0;
-            z-index: 10;
-            opacity: 0;
-            transform: translateY(20px);
-            pointer-events: none;
-        }
-
-        .start-screen.active {
-            opacity: 1;
-            transform: translateY(0);
-            pointer-events: auto;
-        }
-
-        .start-screen-content {
-            max-width: 800px;
-            width: 100%;
-            text-align: center;
-            background-color: var(--bg-window);
-            padding: 3rem;
-            border-radius: 10px;
-            border: var(--border-width) solid var(--border-color);
-            box-shadow: 8px 8px 0 var(--border-color);
-        }
-
-        .logo {
-            font-size: 3.5rem;
-            margin-bottom: 1rem;
-            transform: scale(1);
-            transition: transform 0.3s;
-        }
-
-        .logo:hover {
-            transform: scale(1.05);
-        }
-
-        .saved-reports {
-            margin-top: 3rem;
-            text-align: left;
-        }
-
-        .report-list {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            background-color: var(--bg-secondary);
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .report-item {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color var(--transition-speed);
-        }
-
-        .report-item:last-child {
-            border-bottom: none;
-        }
-
-        .report-item:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .report-item-empty {
-            padding: 1rem;
-            text-align: center;
-            color: var(--text-secondary);
-        }
-
-        .report-item-info {
-            flex: 1;
-        }
-
-        .report-item-address {
-            font-weight: bold;
-            margin-bottom: 0.25rem;
-        }
-
-        .report-item-date {
-            font-size: 0.8rem;
-            color: var(--text-secondary);
-        }
-
-        .report-item-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .report-item-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            padding: 0;
-            box-shadow: 2px 2px 0 var(--border-color);
-        }
-
-        .report-item-btn:hover {
-            transform: translate(1px, 1px);
-            box-shadow: 1px 1px 0 var(--border-color);
-        }
-
-        .report-item-btn.load-btn {
-            background-color: var(--accent-primary);
-            color: var(--bg-window);
-        }
-
-        .report-item-btn.delete-btn {
-            background-color: var(--error);
-            color: var(--bg-window);
-        }
-
-        .main-interface {
-            width: 100%;
-            height: 100%;
-            opacity: 0;
-            transform: scale(0.95);
-            transition: opacity var(--transition-speed), transform var(--transition-speed);
-            position: absolute;
-            top: 0;
-            left: 0;
-            pointer-events: none;
-        }
-
-        .main-interface.active {
-            opacity: 1;
-            transform: scale(1);
-            pointer-events: auto;
-        }
-
-        .desktop {
-            width: 100%;
-            height: calc(100% - 40px);
-            position: relative;
-            overflow: hidden;
-            background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23bdbdbd' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
-        }
-
-        .toolbar {
-            width: 100%;
-            height: 40px;
-            background-color: var(--window-header);
-            border-bottom: var(--border-width) solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 0 1rem;
-            color: var(--bg-window);
-        }
-
-        .toolbar-title {
-            font-family: var(--font-heading);
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .toolbar-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .toolbar-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            width: 32px;
-            height: 32px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            padding: 0;
-            box-shadow: 2px 2px 0 var(--border-color);
-            color: var(--bg-window);
-        }
-
-        .toolbar-btn:hover {
-            transform: translate(1px, 1px);
-            box-shadow: 1px 1px 0 var(--border-color);
-            background-color: rgba(255, 255, 255, 0.1);
-        }
-
-        .settings-panel {
-            position: absolute;
-            top: 40px;
-            right: 0;
-            width: 300px;
-            background-color: var(--bg-window);
-            border-left: var(--border-width) solid var(--border-color);
-            border-bottom: var(--border-width) solid var(--border-color);
-            border-bottom-left-radius: 10px;
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height var(--transition-speed);
-            z-index: 200;
-            box-shadow: -4px 4px 0 var(--window-shadow);
-        }
-
-        .settings-panel.active {
-            max-height: 600px;
-        }
-
-        .settings-header {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .settings-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            font-size: 1.2rem;
-            color: var(--text-secondary);
-            transition: color var(--transition-speed);
-        }
-
-        .settings-close:hover {
-            color: var(--text-primary);
-        }
-
-        .settings-section {
-            padding: 1rem;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .settings-section:last-child {
-            border-bottom: none;
-        }
-
-        .settings-title {
-            margin-bottom: 1rem;
-            font-family: var(--font-heading);
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-
-        .font-size-controls {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .canvas-tool {
-            padding: 0.5rem 1rem;
-            background-color: var(--bg-secondary);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-        }
-
-        .canvas-tool:hover {
-            background-color: var(--accent-primary);
-            color: var(--bg-window);
-        }
-
-        /* === WINDOWS === */
-        .window {
-            position: absolute;
-            background-color: var(--bg-window);
-            border: var(--border-width) solid var(--window-border);
-            border-radius: var(--window-radius);
-            box-shadow: 6px 6px 0 var(--window-shadow);
-            min-width: 300px;
-            min-height: 200px;
-            max-width: calc(100% - 20px);
-            max-height: calc(100% - 60px);
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-            transition: transform 0.3s, opacity 0.3s;
-            user-select: none;
-        }
-
-        .window-header {
-            background-color: var(--window-header);
-            padding: 0 1rem;
-            height: 35px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: grab;
-            border-bottom: var(--border-width) solid var(--window-border);
-        }
-
-        .window-title {
-            color: var(--bg-window);
-            font-family: var(--font-heading);
-            font-size: 0.9rem;
-            font-weight: bold;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-        }
-
-        .window-controls {
-            display: flex;
-            gap: 8px;
-        }
-
-        .window-control {
-            width: 15px;
-            height: 15px;
-            border-radius: 50%;
-            cursor: pointer;
-            position: relative;
-            border: 1px solid var(--window-border);
-        }
-
-        .window-close {
-            background-color: #ff5f56;
-        }
-
-        .window-minimize {
-            background-color: #ffbd2e;
-        }
-
-        .window-maximize {
-            background-color: #27c93f;
-        }
-
-        .window-close:hover::after,
-        .window-close:hover::before {
-            content: '';
-            position: absolute;
-            width: 9px;
-            height: 1px;
-            background-color: var(--window-border);
-            top: 6px;
-            left: 2px;
-        }
-
-        .window-close:hover::after {
-            transform: rotate(45deg);
-        }
-
-        .window-close:hover::before {
-            transform: rotate(-45deg);
-        }
-
-        .window-minimize:hover::after {
-            content: '';
-            position: absolute;
-            width: 9px;
-            height: 1px;
-            background-color: var(--window-border);
-            top: 6px;
-            left: 2px;
-        }
-
-        .window-maximize:hover::after,
-        .window-maximize:hover::before {
-            content: '';
-            position: absolute;
-            background-color: var(--window-border);
-        }
-
-        .window-maximize:hover::after {
-            width: 7px;
-            height: 7px;
-            border: 1px solid var(--window-border);
-            top: 2px;
-            left: 2px;
-            background-color: transparent;
-        }
-
-        .window-content {
-            flex: 1;
-            padding: 1.5rem;
-            overflow-y: auto;
-        }
-
-        .window.active {
-            box-shadow: 8px 8px 0 var(--window-shadow);
-        }
-
-        .window.minimized .window-content {
-            display: none;
-        }
-
-        .window.maximized {
-            width: 100% !important;
-            height: calc(100% - 40px) !important;
-            top: 0 !important;
-            left: 0 !important;
-            border-radius: 0;
-        }
-
-        /* === ROOM LIST === */
-        .room-list {
-            list-style: none;
-            padding: 0;
-            margin: 0 0 1.5rem 0;
-            background-color: var(--bg-secondary);
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .room-item {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: background-color var(--transition-speed);
-        }
-
-        .room-item:last-child {
-            border-bottom: none;
-        }
-
-        .room-item:hover {
-            background-color: rgba(0, 0, 0, 0.05);
-        }
-
-        .room-item.urgent {
-            border-left: 5px solid var(--error);
-            padding-left: calc(1rem - 5px);
-        }
-
-        .room-item-empty {
-            padding: 1rem;
-            text-align: center;
-            color: var(--text-secondary);
-        }
-
-        .room-name {
-            font-weight: bold;
-        }
-
-        .room-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-
-        .room-btn {
-            background: none;
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            width: 28px;
-            height: 28px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            padding: 0;
-            box-shadow: 2px 2px 0 var(--border-color);
-        }
-
-        .room-btn:hover {
-            transform: translate(1px, 1px);
-            box-shadow: 1px 1px 0 var(--border-color);
-        }
-
-        .room-btn.edit-btn {
-            background-color: var(--accent-primary);
-            color: var(--bg-window);
-        }
-
-        .room-btn.delete-btn {
-            background-color: var(--error);
-            color: var(--bg-window);
-        }
-
-        .add-room {
-            background-color: var(--accent-secondary);
-            color: var(--text-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 4px;
-            padding: 0.5rem 1rem;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            box-shadow: 2px 2px 0 var(--border-color);
-        }
-
-        .add-room:hover {
-            transform: translate(1px, 1px);
-            box-shadow: 1px 1px 0 var(--border-color);
-        }
-
-        /* === RATING === */
-        .rating {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .rating-slider {
-            flex: 1;
-            appearance: none;
-            height: 8px;
-            background-color: var(--bg-secondary);
-            border-radius: 4px;
-            outline: none;
-            border: var(--border-width) solid var(--border-color);
-        }
-
-        .rating-slider::-webkit-slider-thumb {
-            appearance: none;
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--accent-primary);
-            border: var(--border-width) solid var(--border-color);
-            cursor: pointer;
-        }
-
-        .rating-slider::-moz-range-thumb {
-            width: 20px;
-            height: 20px;
-            border-radius: 50%;
-            background-color: var(--accent-primary);
-            border: var(--border-width) solid var(--border-color);
-            cursor: pointer;
-        }
-
-        .rating-value {
-            font-weight: bold;
-            min-width: 40px;
-        }
-
-        /* === DROPZONE === */
-        .dropzone {
-            border: 2px dashed var(--border-color);
-            border-radius: 5px;
-            padding: 2rem;
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            background-color: var(--bg-secondary);
-            color: var(--text-secondary);
-        }
-
-        .dropzone:hover, .dropzone.active {
-            background-color: var(--bg-primary);
-            border-color: var(--accent-primary);
-            color: var(--accent-primary);
-        }
-
-        /* === PHOTO PREVIEWS === */
-        .photo-previews {
-            margin-top: 1rem;
-        }
-
-        .photo-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-            gap: 1rem;
-        }
-
-        .photo-item {
-            position: relative;
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 5px;
-            overflow: hidden;
-            aspect-ratio: 1;
-        }
-
-        .image-preview {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .photo-delete-btn {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background-color: rgba(0, 0, 0, 0.5);
-            color: white;
-            border: none;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: all var(--transition-speed);
-            padding: 0;
-        }
-
-        .photo-delete-btn:hover {
-            background-color: var(--error);
-            transform: scale(1.1);
-        }
-
-        /* === SIGNATURE CANVAS === */
-        .signature-canvas {
-            width: 100%;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            background-color: white;
-            cursor: crosshair;
-        }
-
-        .canvas-tools {
-            display: flex;
-            gap: 0.5rem;
-            margin-top: 0.5rem;
-            justify-content: flex-end;
-        }
-
-        /* === SUMMARY === */
-        .summary-list {
-            list-style: none;
-            padding: 0;
-            margin: 1rem 0;
-            background-color: var(--bg-secondary);
-            border: var(--border-width) solid var(--border-color);
-            border-radius: 5px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-
-        .summary-item {
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid var(--border-color);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .summary-item:last-child {
-            border-bottom: none;
-        }
-
-        .summary-item.urgent {
-            border-left: 5px solid var(--error);
-            padding-left: calc(1rem - 5px);
-        }
-
-        .urgent-badge {
-            background-color: var(--error);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            border-radius: 3px;
-            font-size: 0.8rem;
-            font-weight: bold;
-        }
-
-        #qrcode-container {
-            padding: 1rem;
-            background-color: white;
-            border-radius: 5px;
-            border: var(--border-width) solid var(--border-color);
-            box-shadow: 4px 4px 0 var(--window-shadow);
-            display: inline-block;
-        }
-
-        /* === ANIMATIONS === */
-        .animate-pop {
-            animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-        }
-
-        .animate-shake {
-            animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-        }
-
-        @keyframes pop {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            50% { transform: translateX(5px); }
-            75% { transform: translateX(-5px); }
-        }
-
-        /* === FONT SIZES === */
-        .font-size-1 {
-            font-size: 14px;
-        }
-
-        .font-size-2 {
-            font-size: 16px;
-        }
-
-        .font-size-3 {
-            font-size: 18px;
-        }
-
-        /* === HIGH CONTRAST === */
-        .high-contrast {
-            --accent-primary: #0066cc;
-            --accent-secondary: #00994c;
-            --accent-tertiary: #cc6600;
-            --error: #cc0000;
-            --warning: #cc6600;
-            --success: #007744;
-            --text-primary: #000000;
-            --text-secondary: #333333;
-            --border-color: #000000;
-            --border-width: 2px;
-        }
-
-        /* === DARK MODE === */
-        .dark-mode {
-            --bg-primary: #1a1a1a;
-            --bg-secondary: #2a2a2a;
-            --bg-window: #333333;
-            --text-primary: #e0e0e0;
-            --text-secondary: #aaaaaa;
-            --accent-primary: #5c9ead;
-            --accent-secondary: #7abf8e;
-            --accent-tertiary: #f0a868;
-            --border-color: #555555;
-            --window-header: #444455;
-            --window-shadow: rgba(0, 0, 0, 0.3);
-            --window-border: #666666;
-        }
-
-        /* === RESPONSIVE === */
-        @media (max-width: 768px) {
-            .start-screen-content {
-                padding: 2rem;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            .logo {
-                font-size: 3rem;
-            }
-
-            .window {
-                max-width: 100%;
-                width: calc(100% - 20px) !important;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .start-screen-content {
-                padding: 1.5rem;
-            }
-
-            h1 {
-                font-size: 2rem;
-            }
-
-            .logo {
-                font-size: 2.5rem;
-            }
-
-            .form-group {
-                margin-bottom: 1rem;
-            }
-            
-            .photo-grid {
-                grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>InspectSpace • Property Inspection Tool</title>
+  <!-- External dependencies -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/interact.js/1.10.17/interact.min.js"></script>
+  <style>
+    /* === GLOBAL STYLES === */
+    :root {
+      /* Light mode colors */
+      --bg-primary: #f0f0ea;
+      --bg-secondary: #e8e8dd;
+      --bg-window: #ffffff;
+      --text-primary: #232320;
+      --text-secondary: #46463e;
+      --accent-primary: #6d8a96;
+      --accent-secondary: #9bc995;
+      --accent-tertiary: #e7a75c;
+      --border-color: #2c2c2a;
+      --window-header: #7c90ac;
+      --window-shadow: rgba(0, 0, 0, 0.2);
+      --window-border: #242424;
+      --success: #66a182;
+      --error: #d35d6e;
+      --warning: #e7a75c;
+      
+      /* Size variables */
+      --window-radius: 6px;
+      --border-width: 2px;
+      --button-radius: 5px;
+      
+      /* Typography */
+      --font-heading: 'Arial Black', Gadget, sans-serif;
+      --font-body: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+      
+      /* Transitions */
+      --transition-speed: 0.2s;
+    }
+
+    [data-theme="dark"] {
+      --bg-primary: #212125;
+      --bg-secondary: #2c2c30;
+      --bg-window: #343438;
+      --text-primary: #e8e8e0;
+      --text-secondary: #b8b8b0;
+      --accent-primary: #7c9eb3;
+      --accent-secondary: #86b375;
+      --accent-tertiary: #e7b979;
+      --border-color: #5c5c5a;
+      --window-header: #546180;
+      --window-shadow: rgba(0, 0, 0, 0.4);
+      --window-border: #4a4a4a;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      font-family: var(--font-body);
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+      font-size: 16px;
+      line-height: 1.5;
+      overflow: hidden;
+      transition: background-color var(--transition-speed), color var(--transition-speed);
+    }
+
+    /* === TYPOGRAPHY === */
+    h1, h2, h3, h4, h5 {
+      font-family: var(--font-heading);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 900;
+    }
+
+    h1 {
+      font-size: 3.2rem;
+      line-height: 1.2;
+      margin-bottom: 1rem;
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      margin-bottom: 1rem;
+    }
+
+    h3 {
+      font-size: 1.6rem;
+      margin-bottom: 0.75rem;
+    }
+
+    p {
+      margin-bottom: 1rem;
+    }
+
+    /* === BUTTONS === */
+    button, .btn {
+      font-family: var(--font-heading);
+      font-weight: bold;
+      font-size: 1rem;
+      text-transform: uppercase;
+      padding: 0.75rem 1.5rem;
+      background-color: var(--accent-primary);
+      color: var(--bg-primary);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: var(--button-radius);
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      box-shadow: 4px 4px 0 var(--border-color);
+      margin: 0.5rem;
+      letter-spacing: 0.05em;
+    }
+
+    button:hover, .btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0 var(--border-color);
+      filter: brightness(1.1);
+    }
+
+    button:active, .btn:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+      filter: brightness(0.9);
+    }
+
+    .start-btn {
+      font-size: 1.2rem;
+      background-color: var(--accent-secondary);
+      padding: 1rem 2rem;
+      box-shadow: 5px 5px 0 var(--border-color);
+    }
+
+    .start-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 3px 3px 0 var(--border-color);
+    }
+
+    .start-btn:active {
+      transform: translate(5px, 5px);
+      box-shadow: none;
+    }
+
+    /* === FORMS === */
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-label {
+      display: block;
+      font-family: var(--font-heading);
+      font-weight: bold;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+      color: var(--text-primary);
+      font-size: 0.9rem;
+      letter-spacing: 0.05em;
+    }
+
+    .form-input, .form-textarea, .form-select {
+      width: 100%;
+      padding: 0.75rem;
+      background-color: var(--bg-window);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: 4px;
+      font-family: var(--font-body);
+      font-size: 1rem;
+      color: var(--text-primary);
+      transition: all var(--transition-speed);
+    }
+
+    .form-input:focus, .form-textarea:focus, .form-select:focus {
+      outline: none;
+      border-color: var(--accent-primary);
+      box-shadow: 0 0 0 2px rgba(109, 138, 150, 0.3);
+    }
+
+    .form-textarea {
+      min-height: 100px;
+      resize: vertical;
+    }
+
+    /* === TOGGLE SWITCH === */
+    .toggle {
+      display: flex;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      padding: 0.5rem;
+      border-radius: 4px;
+      transition: all var(--transition-speed);
+    }
+
+    .toggle:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .toggle-switch {
+      position: relative;
+      display: inline-block;
+      width: 40px;
+      height: 24px;
+      background-color: var(--bg-secondary);
+      border-radius: 12px;
+      margin-right: 10px;
+      transition: all var(--transition-speed);
+      border: var(--border-width) solid var(--border-color);
+    }
+
+    .toggle-switch::after {
+      content: '';
+      position: absolute;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background-color: var(--bg-primary);
+      top: 1px;
+      left: 1px;
+      transition: all var(--transition-speed);
+      border: var(--border-width) solid var(--border-color);
+    }
+
+    .toggle.active .toggle-switch {
+      background-color: var(--accent-primary);
+    }
+
+    .toggle.active .toggle-switch::after {
+      transform: translateX(16px);
+      background-color: var(--bg-window);
+    }
+
+    /* === LAYOUT === */
+    .app {
+      width: 100%;
+      height: 100%;
+      position: relative;
+    }
+
+    .start-screen {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      padding: 2rem;
+      background-color: var(--bg-primary);
+      transition: opacity var(--transition-speed), transform var(--transition-speed);
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 10;
+      opacity: 0;
+      transform: translateY(20px);
+      pointer-events: none;
+    }
+
+    .start-screen.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .start-screen-content {
+      max-width: 800px;
+      width: 100%;
+      text-align: center;
+      background-color: var(--bg-window);
+      padding: 3rem;
+      border-radius: 10px;
+      border: var(--border-width) solid var(--border-color);
+      box-shadow: 8px 8px 0 var(--border-color);
+    }
+
+    .logo {
+      font-size: 3.5rem;
+      margin-bottom: 1rem;
+      transform: scale(1);
+      transition: transform 0.3s;
+    }
+
+    .logo:hover {
+      transform: scale(1.05);
+    }
+
+    .saved-reports {
+      margin-top: 3rem;
+      text-align: left;
+    }
+
+    .report-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      background-color: var(--bg-secondary);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: 5px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .report-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color var(--transition-speed);
+    }
+
+    .report-item:last-child {
+      border-bottom: none;
+    }
+
+    .report-item:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .report-item-empty {
+      padding: 1rem;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .report-item-info {
+      flex: 1;
+    }
+
+    .report-item-address {
+      font-weight: bold;
+      margin-bottom: 0.25rem;
+    }
+
+    .report-item-date {
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+
+    .report-item-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .report-item-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      padding: 0;
+      box-shadow: 2px 2px 0 var(--border-color);
+    }
+
+    .report-item-btn:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 var(--border-color);
+    }
+
+    .report-item-btn.load-btn {
+      background-color: var(--accent-primary);
+      color: var(--bg-window);
+    }
+
+    .report-item-btn.delete-btn {
+      background-color: var(--error);
+      color: var(--bg-window);
+    }
+
+    .main-interface {
+      width: 100%;
+      height: 100%;
+      opacity: 0;
+      transform: scale(0.95);
+      transition: opacity var(--transition-speed), transform var(--transition-speed);
+      position: absolute;
+      top: 0;
+      left: 0;
+      pointer-events: none;
+    }
+
+    .main-interface.active {
+      opacity: 1;
+      transform: scale(1);
+      pointer-events: auto;
+    }
+
+    .desktop {
+      width: 100%;
+      height: calc(100% - 40px);
+      position: relative;
+      overflow: hidden;
+      background-image: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23bdbdbd' fill-opacity='0.1' fill-rule='evenodd'/%3E%3C/svg%3E");
+    }
+
+    .toolbar {
+      width: 100%;
+      height: 40px;
+      background-color: var(--window-header);
+      border-bottom: var(--border-width) solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 1rem;
+      color: var(--bg-window);
+    }
+
+    .toolbar-title {
+      font-family: var(--font-heading);
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .toolbar-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      width: 32px;
+      height: 32px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      padding: 0;
+      box-shadow: 2px 2px 0 var(--border-color);
+      color: var(--bg-window);
+    }
+
+    .toolbar-btn:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 var(--border-color);
+      background-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .settings-panel {
+      position: absolute;
+      top: 40px;
+      right: 0;
+      width: 300px;
+      background-color: var(--bg-window);
+      border-left: var(--border-width) solid var(--border-color);
+      border-bottom: var(--border-width) solid var(--border-color);
+      border-bottom-left-radius: 10px;
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height var(--transition-speed);
+      z-index: 200;
+      box-shadow: -4px 4px 0 var(--window-shadow);
+    }
+
+    .settings-panel.active {
+      max-height: 600px;
+    }
+
+    .settings-header {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .settings-close {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.2rem;
+      color: var(--text-secondary);
+      transition: color var(--transition-speed);
+    }
+
+    .settings-close:hover {
+      color: var(--text-primary);
+    }
+
+    .settings-section {
+      padding: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .settings-section:last-child {
+      border-bottom: none;
+    }
+
+    .settings-title {
+      margin-bottom: 1rem;
+      font-family: var(--font-heading);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .font-size-controls {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .canvas-tool {
+      padding: 0.5rem 1rem;
+      background-color: var(--bg-secondary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+    }
+
+    .canvas-tool:hover {
+      background-color: var(--accent-primary);
+      color: var(--bg-window);
+    }
+
+    /* === WINDOWS === */
+    .window {
+      position: absolute;
+      background-color: var(--bg-window);
+      border: var(--border-width) solid var(--window-border);
+      border-radius: var(--window-radius);
+      box-shadow: 6px 6px 0 var(--window-shadow);
+      min-width: 300px;
+      min-height: 200px;
+      max-width: calc(100% - 20px);
+      max-height: calc(100% - 60px);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      transition: transform 0.3s, opacity 0.3s;
+      user-select: none;
+    }
+
+    .window-header {
+      background-color: var(--window-header);
+      padding: 0 1rem;
+      height: 35px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: grab;
+      border-bottom: var(--border-width) solid var(--window-border);
+    }
+
+    .window-title {
+      color: var(--bg-window);
+      font-family: var(--font-heading);
+      font-size: 0.9rem;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .window-controls {
+      display: flex;
+      gap: 8px;
+    }
+
+    .window-control {
+      width: 15px;
+      height: 15px;
+      border-radius: 50%;
+      cursor: pointer;
+      position: relative;
+      border: 1px solid var(--window-border);
+    }
+
+    .window-close {
+      background-color: #ff5f56;
+    }
+
+    .window-minimize {
+      background-color: #ffbd2e;
+    }
+
+    .window-maximize {
+      background-color: #27c93f;
+    }
+
+    .window-close:hover::after,
+    .window-close:hover::before {
+      content: '';
+      position: absolute;
+      width: 9px;
+      height: 1px;
+      background-color: var(--window-border);
+      top: 6px;
+      left: 2px;
+    }
+
+    .window-close:hover::after {
+      transform: rotate(45deg);
+    }
+
+    .window-close:hover::before {
+      transform: rotate(-45deg);
+    }
+
+    .window-minimize:hover::after {
+      content: '';
+      position: absolute;
+      width: 9px;
+      height: 1px;
+      background-color: var(--window-border);
+      top: 6px;
+      left: 2px;
+    }
+
+    .window-maximize:hover::after,
+    .window-maximize:hover::before {
+      content: '';
+      position: absolute;
+      background-color: var(--window-border);
+    }
+
+    .window-maximize:hover::after {
+      width: 7px;
+      height: 7px;
+      border: 1px solid var(--window-border);
+      top: 2px;
+      left: 2px;
+      background-color: transparent;
+    }
+
+    .window-content {
+      flex: 1;
+      padding: 1.5rem;
+      overflow-y: auto;
+    }
+
+    .window.active {
+      box-shadow: 8px 8px 0 var(--window-shadow);
+    }
+
+    .window.minimized .window-content {
+      display: none;
+    }
+
+    .window.maximized {
+      width: 100% !important;
+      height: calc(100% - 40px) !important;
+      top: 0 !important;
+      left: 0 !important;
+      border-radius: 0;
+    }
+
+    /* === ROOM LIST === */
+    .room-list {
+      list-style: none;
+      padding: 0;
+      margin: 0 0 1.5rem 0;
+      background-color: var(--bg-secondary);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: 5px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .room-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: background-color var(--transition-speed);
+    }
+
+    .room-item:last-child {
+      border-bottom: none;
+    }
+
+    .room-item:hover {
+      background-color: rgba(0, 0, 0, 0.05);
+    }
+
+    .room-item.urgent {
+      border-left: 5px solid var(--error);
+      padding-left: calc(1rem - 5px);
+    }
+
+    .room-item-empty {
+      padding: 1rem;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .room-name {
+      font-weight: bold;
+    }
+
+    .room-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .room-btn {
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      padding: 0;
+      box-shadow: 2px 2px 0 var(--border-color);
+    }
+
+    .room-btn:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 var(--border-color);
+    }
+
+    .room-btn.edit-btn {
+      background-color: var(--accent-primary);
+      color: var(--bg-window);
+    }
+
+    .room-btn.delete-btn {
+      background-color: var(--error);
+      color: var(--bg-window);
+    }
+
+    .add-room {
+      background-color: var(--accent-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      padding: 0.5rem 1rem;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      box-shadow: 2px 2px 0 var(--border-color);
+    }
+
+    .add-room:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 1px 1px 0 var(--border-color);
+    }
+
+    /* === RATING === */
+    .rating {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .rating-slider {
+      flex: 1;
+      appearance: none;
+      height: 8px;
+      background-color: var(--bg-secondary);
+      border-radius: 4px;
+      outline: none;
+      border: var(--border-width) solid var(--border-color);
+    }
+
+    .rating-slider::-webkit-slider-thumb {
+      appearance: none;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--accent-primary);
+      border: var(--border-width) solid var(--border-color);
+      cursor: pointer;
+    }
+
+    .rating-slider::-moz-range-thumb {
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: var(--accent-primary);
+      border: var(--border-width) solid var(--border-color);
+      cursor: pointer;
+    }
+
+    .rating-value {
+      font-weight: bold;
+      min-width: 40px;
+    }
+
+    /* === DROPZONE === */
+    .dropzone {
+      border: 2px dashed var(--border-color);
+      border-radius: 5px;
+      padding: 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      background-color: var(--bg-secondary);
+      color: var(--text-secondary);
+    }
+
+    .dropzone:hover, .dropzone.active {
+      background-color: var(--bg-primary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
+
+    /* === PHOTO PREVIEWS === */
+    .photo-previews {
+      margin-top: 1rem;
+    }
+
+    .photo-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      gap: 1rem;
+    }
+
+    .photo-item {
+      position: relative;
+      border: var(--border-width) solid var(--border-color);
+      border-radius: 5px;
+      overflow: hidden;
+      aspect-ratio: 1;
+    }
+
+    .image-preview {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .photo-delete-btn {
+      position: absolute;
+      top: 5px;
+      right: 5px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: rgba(0, 0, 0, 0.5);
+      color: white;
+      border: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      transition: all var(--transition-speed);
+      padding: 0;
+    }
+
+    .photo-delete-btn:hover {
+      background-color: var(--error);
+      transform: scale(1.1);
+    }
+
+    /* === SIGNATURE CANVAS === */
+    .signature-canvas {
+      width: 100%;
+      border: 1px solid var(--border-color);
+      border-radius: 5px;
+      background-color: white;
+      cursor: crosshair;
+    }
+
+    .canvas-tools {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    /* === SUMMARY === */
+    .summary-list {
+      list-style: none;
+      padding: 0;
+      margin: 1rem 0;
+      background-color: var(--bg-secondary);
+      border: var(--border-width) solid var(--border-color);
+      border-radius: 5px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .summary-item {
+      padding: 0.75rem 1rem;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .summary-item:last-child {
+      border-bottom: none;
+    }
+
+    .summary-item.urgent {
+      border-left: 5px solid var(--error);
+      padding-left: calc(1rem - 5px);
+    }
+
+    .urgent-badge {
+      background-color: var(--error);
+      color: white;
+      padding: 0.25rem 0.5rem;
+      border-radius: 3px;
+      font-size: 0.8rem;
+      font-weight: bold;
+    }
+
+    #qrcode-container {
+      padding: 1rem;
+      background-color: white;
+      border-radius: 5px;
+      border: var(--border-width) solid var(--border-color);
+      box-shadow: 4px 4px 0 var(--window-shadow);
+      display: inline-block;
+    }
+
+    /* === ANIMATIONS === */
+    .animate-pop {
+      animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    .animate-shake {
+      animation: shake 0.3s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+    }
+
+    @keyframes pop {
+      0% { transform: scale(0.9); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
+      75% { transform: translateX(-5px); }
+    }
+
+    /* === FONT SIZES === */
+    .font-size-1 {
+      font-size: 14px;
+    }
+
+    .font-size-2 {
+      font-size: 16px;
+    }
+
+    .font-size-3 {
+      font-size: 18px;
+    }
+
+    /* === HIGH CONTRAST === */
+    .high-contrast {
+      --accent-primary: #0066cc;
+      --accent-secondary: #00994c;
+      --accent-tertiary: #cc6600;
+      --error: #cc0000;
+      --warning: #cc6600;
+      --success: #007744;
+      --text-primary: #000000;
+      --text-secondary: #333333;
+      --border-color: #000000;
+      --border-width: 2px;
+    }
+
+    /* === DARK MODE === */
+    .dark-mode {
+      --bg-primary: #1a1a1a;
+      --bg-secondary: #2a2a2a;
+      --bg-window: #333333;
+      --text-primary: #e0e0e0;
+      --text-secondary: #aaaaaa;
+      --accent-primary: #5c9ead;
+      --accent-secondary: #7abf8e;
+      --accent-tertiary: #f0a868;
+      --border-color: #555555;
+      --window-header: #444455;
+      --window-shadow: rgba(0, 0, 0, 0.3);
+      --window-border: #666666;
+    }
+
+    /* === RESPONSIVE === */
+    @media (max-width: 768px) {
+      .start-screen-content {
+        padding: 2rem;
+      }
+
+      h1 {
+        font-size: 2.5rem;
+      }
+
+      .logo {
+        font-size: 3rem;
+      }
+
+      .window {
+        max-width: 100%;
+        width: calc(100% - 20px) !important;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .start-screen-content {
+        padding: 1.5rem;
+      }
+
+      h1 {
+        font-size: 2rem;
+      }
+
+      .logo {
+        font-size: 2.5rem;
+      }
+
+      .form-group {
+        margin-bottom: 1rem;
+      }
+      
+      .photo-grid {
+        grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      }
+    }
+  </style>
 </head>
 <body>
-    <div id="app" class="app">
-        <!-- Start Screen -->
-        <div id="start-screen" class="start-screen active"></div>
-        
-        <!-- Main Interface -->
-        <div id="main-interface" class="main-interface">
-            <div id="toolbar" class="toolbar"></div>
-            <div id="desktop" class="desktop"></div>
-            <div id="settings-panel" class="settings-panel"></div>
-        </div>
+  <div id="app" class="app">
+    <!-- Start Screen -->
+    <div id="start-screen" class="start-screen active"></div>
+    
+    <!-- Main Interface -->
+    <div id="main-interface" class="main-interface">
+      <div id="toolbar" class="toolbar"></div>
+      <div id="desktop" class="desktop"></div>
+      <div id="settings-panel" class="settings-panel"></div>
     </div>
-    
-    <!-- External Dependencies -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-    
-    <script>
-        // Initialize the application when DOM is loaded
-        document.addEventListener('DOMContentLoaded', function() {
-            // App state
-            const state = {
-                darkMode: false,
-                fontSize: 2,
-                highContrast: false,
-                currentInspection: null,
-                savedInspections: [],
-                windows: [],
-                nextWindowId: 1,
-                zIndex: 100
-            };
+  </div>
+  
+  <!-- External Dependencies -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  
+  <script>
+    // Initialize the application when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+      // App state
+      const state = {
+        darkMode: false,
+        fontSize: 2,
+        highContrast: false,
+        currentInspection: null,
+        savedInspections: [],
+        windows: [],
+        nextWindowId: 1,
+        zIndex: 100
+      };
+      
+      // DOM Elements
+      const elements = {
+        app: document.getElementById('app'),
+        startScreen: document.getElementById('start-screen'),
+        mainInterface: document.getElementById('main-interface'),
+        desktop: document.getElementById('desktop'),
+        toolbar: document.getElementById('toolbar'),
+        settingsPanel: document.getElementById('settings-panel')
+      };
+      
+      // Initialize the application
+      function init() {
+        loadStateFromLocalStorage();
+        renderStartScreen();
+        renderToolbar();
+        renderSettingsPanel();
+        setupEventListeners();
+        
+        // Optional startup sound
+        playSound('startup');
+      }
+      
+      // Load state from localStorage
+      function loadStateFromLocalStorage() {
+        try {
+          const savedState = localStorage.getItem('propInspectState');
+          if (savedState) {
+            const parsedState = JSON.parse(savedState);
+            state.darkMode = parsedState.darkMode || false;
+            state.fontSize = parsedState.fontSize || 2;
+            state.highContrast = parsedState.highContrast || false;
+            state.savedInspections = parsedState.savedInspections || [];
+          }
+          
+          // Apply saved preferences
+          if (state.darkMode) {
+            document.body.setAttribute('data-theme', 'dark');
+          }
+          document.body.classList.add(`font-size-${state.fontSize}`);
+          if (state.highContrast) {
+            document.body.classList.add('high-contrast');
+          }
+        } catch (error) {
+          console.error('Error loading state from localStorage:', error);
+        }
+      }
+      
+      // Save state to localStorage
+      function saveStateToLocalStorage() {
+        try {
+          const stateToSave = {
+            darkMode: state.darkMode,
+            fontSize: state.fontSize,
+            highContrast: state.highContrast,
+            savedInspections: state.savedInspections
+          };
+          localStorage.setItem('propInspectState', JSON.stringify(stateToSave));
+        } catch (error) {
+          console.error('Error saving state to localStorage:', error);
+        }
+      }
+      
+      // Render the start screen
+      function renderStartScreen() {
+        elements.startScreen.innerHTML = `
+          <div class="start-screen-content animate-pop">
+            <div class="logo">🏠 InspectSpace</div>
+            <h1>Property Inspection Tool</h1>
+            <p>Streamline your property inspections with our intuitive, user-friendly tool.</p>
+            <button id="start-inspection-btn" class="start-btn">
+              <i class="fas fa-clipboard-check"></i> Begin New Inspection
+            </button>
             
-            // DOM Elements
-            const elements = {
-                app: document.getElementById('app'),
-                startScreen: document.getElementById('start-screen'),
-                mainInterface: document.getElementById('main-interface'),
-                desktop: document.getElementById('desktop'),
-                toolbar: document.getElementById('toolbar'),
-                settingsPanel: document.getElementById('settings-panel')
-            };
+            <div class="saved-reports">
+              <h3>Saved Inspections</h3>
+              <ul class="report-list" id="saved-reports-list">
+                ${renderSavedReportsList()}
+              </ul>
+            </div>
+          </div>
+        `;
+        
+        // Set up event listeners for the start screen
+        document.getElementById('start-inspection-btn').addEventListener('click', startNewInspection);
+        
+        // Event listeners for saved reports
+        const reportButtons = document.querySelectorAll('.report-item-btn');
+        reportButtons.forEach(button => {
+          button.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const reportId = button.closest('.report-item').dataset.id;
             
-            // Initialize the application
-            function init() {
-                loadStateFromLocalStorage();
-                renderStartScreen();
-                renderToolbar();
-                renderSettingsPanel();
-                setupEventListeners();
+            if (button.classList.contains('load-btn')) {
+              loadInspection(reportId);
+            } else if (button.classList.contains('delete-btn')) {
+              deleteInspection(reportId);
+            }
+          });
+        });
+        
+        // Clicking anywhere on a report item (except buttons) loads it
+        const reportItems = document.querySelectorAll('.report-item');
+        reportItems.forEach(item => {
+          item.addEventListener('click', () => {
+            const reportId = item.dataset.id;
+            loadInspection(reportId);
+          });
+        });
+      }
+      
+      // Render saved reports list
+      function renderSavedReportsList() {
+        if (state.savedInspections.length === 0) {
+          return '<li class="report-item-empty">No saved inspections found.</li>';
+        }
+        
+        return state.savedInspections.map(inspection => `
+          <li class="report-item" data-id="${inspection.id}">
+            <div class="report-item-info">
+              <div class="report-item-address">${inspection.propertyAddress}</div>
+              <div class="report-item-date">${new Date(inspection.date).toLocaleDateString()}</div>
+            </div>
+            <div class="report-item-actions">
+              <button class="report-item-btn load-btn" title="Load Inspection">
+                <i class="fas fa-folder-open"></i>
+              </button>
+              <button class="report-item-btn delete-btn" title="Delete Inspection">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </li>
+        `).join('');
+      }
+      
+      // Render toolbar
+      function renderToolbar() {
+        elements.toolbar.innerHTML = `
+          <div class="toolbar-title">InspectSpace</div>
+          <div class="toolbar-actions">
+            <button id="new-inspection-btn" class="toolbar-btn" title="New Inspection">
+              <i class="fas fa-plus"></i>
+            </button>
+            <button id="save-inspection-btn" class="toolbar-btn" title="Save Inspection">
+              <i class="fas fa-save"></i>
+            </button>
+            <button id="export-pdf-btn" class="toolbar-btn" title="Export PDF">
+              <i class="fas fa-file-pdf"></i>
+            </button>
+            <button id="settings-btn" class="toolbar-btn" title="Settings">
+              <i class="fas fa-cog"></i>
+            </button>
+            <button id="home-btn" class="toolbar-btn" title="Return to Home">
+              <i class="fas fa-home"></i>
+            </button>
+          </div>
+        `;
+      }
+      
+      // Render settings panel
+      function renderSettingsPanel() {
+        elements.settingsPanel.innerHTML = `
+          <div class="settings-header">
+            <h3>Settings</h3>
+            <button id="settings-close-btn" class="settings-close">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="settings-section">
+            <h4 class="settings-title">Appearance</h4>
+            
+            <div class="form-group">
+              <label class="toggle ${state.darkMode ? 'active' : ''}" id="dark-mode-toggle">
+                <span class="toggle-switch"></span>
+                Dark Mode
+              </label>
+            </div>
+            
+            <div class="form-group">
+              <label class="toggle ${state.highContrast ? 'active' : ''}" id="high-contrast-toggle">
+                <span class="toggle-switch"></span>
+                High Contrast
+              </label>
+            </div>
+            
+            <div class="form-group">
+              <label class="form-label">Font Size</label>
+              <div class="font-size-controls">
+                <button id="font-size-decrease" class="canvas-tool">A-</button>
+                <button id="font-size-reset" class="canvas-tool">Reset</button>
+                <button id="font-size-increase" class="canvas-tool">A+</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h4 class="settings-title">Templates</h4>
+            
+            <div class="form-group">
+              <button id="load-template-btn" class="start-btn">Load Default Rooms</button>
+            </div>
+          </div>
+          
+          <div class="settings-section">
+            <h4 class="settings-title">About</h4>
+            <p>InspectSpace v1.0</p>
+            <p>A property inspection tool for letting agents.</p>
+            <p>© 2025 InspectSpace</p>
+          </div>
+        `;
+      }
+      
+      // Set up event listeners
+      function setupEventListeners() {
+        // Toolbar buttons
+        document.getElementById('new-inspection-btn').addEventListener('click', startNewInspection);
+        document.getElementById('save-inspection-btn').addEventListener('click', saveCurrentInspection);
+        document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
+        document.getElementById('settings-btn').addEventListener('click', toggleSettingsPanel);
+        document.getElementById('home-btn').addEventListener('click', returnToHome);
+        
+        // Settings panel
+        document.getElementById('settings-close-btn').addEventListener('click', toggleSettingsPanel);
+        document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
+        document.getElementById('high-contrast-toggle').addEventListener('click', toggleHighContrast);
+        document.getElementById('font-size-decrease').addEventListener('click', decreaseFontSize);
+        document.getElementById('font-size-reset').addEventListener('click', resetFontSize);
+        document.getElementById('font-size-increase').addEventListener('click', increaseFontSize);
+        document.getElementById('load-template-btn').addEventListener('click', loadDefaultRooms);
+        
+        // Make windows draggable
+        setupInteract();
+      }
+      
+      // Set up interact.js for draggable windows
+      function setupInteract() {
+        interact('.window')
+          .draggable({
+            allowFrom: '.window-header',
+            modifiers: [
+              interact.modifiers.restrict({
+                restriction: 'parent',
+                endOnly: true
+              })
+            ],
+            listeners: {
+              move: dragMoveListener,
+              start: dragStartListener
+            }
+          });
+      }
+      
+      // Drag event listeners
+      function dragMoveListener(event) {
+        const target = event.target;
+        
+        // Keep the dragged position in data-x/data-y attributes
+        const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
+        const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
+        
+        // Translate the element
+        target.style.transform = `translate(${x}px, ${y}px)`;
+        
+        // Update the position attributes
+        target.setAttribute('data-x', x);
+        target.setAttribute('data-y', y);
+      }
+      
+      function dragStartListener(event) {
+        const windowId = event.target.id;
+        bringWindowToFront(windowId);
+      }
+      
+      // Start a new inspection
+      function startNewInspection() {
+        // Create a new inspection object
+        state.currentInspection = {
+          id: generateId(),
+          date: new Date().toISOString(),
+          propertyAddress: '',
+          agentName: '',
+          tenantName: '',
+          rooms: []
+        };
+        
+        // Switch to main interface
+        elements.startScreen.classList.remove('active');
+        elements.mainInterface.classList.add('active');
+        
+        // Create property details window
+        createPropertyDetailsWindow();
+        
+        // Play sound
+        playSound('window-open');
+      }
+      
+      // Create property details window
+      function createPropertyDetailsWindow() {
+        const windowId = `window-property-${state.nextWindowId++}`;
+        const windowHtml = `
+          <div id="${windowId}" class="window" style="top: 50px; left: 50px; width: 500px;">
+            <div class="window-header">
+              <div class="window-title">Property Details</div>
+              <div class="window-controls">
+                <div class="window-control window-close" data-window="${windowId}"></div>
+                <div class="window-control window-minimize" data-window="${windowId}"></div>
+                <div class="window-control window-maximize" data-window="${windowId}"></div>
+              </div>
+            </div>
+            <div class="window-content">
+              <form id="property-form">
+                <div class="form-group">
+                  <label class="form-label" for="property-address">Property Address</label>
+                  <input type="text" id="property-address" class="form-input" required>
+                </div>
                 
-                // Play startup sound
-                playSound('startup');
+                <div class="form-group">
+                  <label class="form-label" for="inspection-date">Inspection Date</label>
+                  <input type="date" id="inspection-date" class="form-input" value="${new Date().toISOString().split('T')[0]}" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="agent-name">Agent Name</label>
+                  <input type="text" id="agent-name" class="form-input" required>
+                </div>
+                
+                <div class="form-group">
+                  <label class="form-label" for="tenant-name">Tenant Name</label>
+                  <input type="text" id="tenant-name" class="form-input" required>
+                </div>
+                
+                <button type="submit" class="start-btn">Continue to Inspection</button>
+              </form>
+            </div>
+          </div>
+        `;
+        
+        elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
+        
+        // Set up event listeners for the window
+        const windowEl = document.getElementById(windowId);
+        
+        // Window controls
+        windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
+        windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
+        windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
+        
+        // Form submission
+        windowEl.querySelector('#property-form').addEventListener('submit', (e) => {
+          e.preventDefault();
+          
+          // Save property details
+          state.currentInspection.propertyAddress = document.getElementById('property-address').value;
+          state.currentInspection.date = document.getElementById('inspection-date').value;
+          state.currentInspection.agentName = document.getElementById('agent-name').value;
+          state.currentInspection.tenantName = document.getElementById('tenant-name').value;
+          
+          // Close property window
+          closeWindow(windowId);
+          
+          // Create rooms management window
+          createRoomsManagementWindow();
+        });
+        
+        // Add window to state and bring to front
+        state.windows.push(windowId);
+        bringWindowToFront(windowId);
+        
+        // Animate window opening
+        windowEl.classList.add('animate-pop');
+      }
+      
+      // Create rooms management window
+      function createRoomsManagementWindow() {
+        const windowId = `window-rooms-${state.nextWindowId++}`;
+        const windowHtml = `
+          <div id="${windowId}" class="window" style="top: 80px; left: 80px; width: 600px;">
+            <div class="window-header">
+              <div class="window-title">Rooms Management</div>
+              <div class="window-controls">
+                <div class="window-control window-close" data-window="${windowId}"></div>
+                <div class="window-control window-minimize" data-window="${windowId}"></div>
+                <div class="window-control window-maximize" data-window="${windowId}"></div>
+              </div>
+            </div>
+            <div class="window-content">
+              <h3>Property: ${state.currentInspection.propertyAddress}</h3>
+              <p>Add rooms to inspect and click on them to begin inspection.</p>
+              
+              <ul id="room-list" class="room-list">
+                ${renderRoomsList()}
+              </ul>
+              
+              <div class="form-group">
+                <label class="form-label" for="new-room-name">Add New Room</label>
+                <div style="display: flex; gap: 10px;">
+                  <input type="text" id="new-room-name" class="form-input" placeholder="Room name (e.g. Kitchen, Bedroom 1)">
+                  <button id="add-room-btn" class="add-room">
+                    <i class="fas fa-plus"></i> Add
+                  </button>
+                </div>
+              </div>
+              
+              <div class="form-group" style="margin-top: 20px;">
+                <button id="signatures-btn" class="start-btn">Proceed to Signatures</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
+        
+        // Set up event listeners for the window
+        const windowEl = document.getElementById(windowId);
+        
+        // Window controls
+        windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
+        windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
+        windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
+        
+        // Add room button
+        windowEl.querySelector('#add-room-btn').addEventListener('click', addNewRoom);
+        
+        // Signatures button
+        windowEl.querySelector('#signatures-btn').addEventListener('click', () => {
+          createSignaturesWindow();
+        });
+        
+        // Add window to state and bring to front
+        state.windows.push(windowId);
+        bringWindowToFront(windowId);
+        
+        // Animate window opening
+        windowEl.classList.add('animate-pop');
+        
+        // Play sound
+        playSound('window-open');
+        
+        // Event delegation for room list
+        const roomList = windowEl.querySelector('#room-list');
+        roomList.addEventListener('click', (e) => {
+          const target = e.target;
+          
+          // If user clicked the row or .room-name, open the room
+          if (target.classList.contains('room-name') || target.parentElement.classList.contains('room-item')) {
+            const roomItem = target.closest('.room-item');
+            if (!roomItem) return;
+            const roomId = roomItem.dataset.id;
+            createRoomInspectionWindow(roomId);
+          }
+          
+          // Check if edit button was clicked
+          if (target.classList.contains('edit-btn') || target.parentElement.classList.contains('edit-btn')) {
+            const roomItem = target.closest('.room-item');
+            const roomId = roomItem.dataset.id;
+            createRoomInspectionWindow(roomId);
+            e.stopPropagation();
+          }
+          
+          // Check if delete button was clicked
+          if (target.classList.contains('delete-btn') || target.parentElement.classList.contains('delete-btn')) {
+            const roomItem = target.closest('.room-item');
+            const roomId = roomItem.dataset.id;
+            deleteRoom(roomId);
+            e.stopPropagation();
+          }
+        });
+      }
+      
+      // Render rooms list
+      function renderRoomsList() {
+        if (!state.currentInspection || state.currentInspection.rooms.length === 0) {
+          return '<li class="room-item-empty">No rooms added yet.</li>';
+        }
+        
+        return state.currentInspection.rooms.map(room => `
+          <li class="room-item ${room.urgent ? 'urgent' : ''}" data-id="${room.id}">
+            <div class="room-name">${room.name}</div>
+            <div class="room-actions">
+              <button class="room-btn edit-btn" title="Edit Room">
+                <i class="fas fa-edit"></i>
+              </button>
+              <button class="room-btn delete-btn" title="Delete Room">
+                <i class="fas fa-trash"></i>
+              </button>
+            </div>
+          </li>
+        `).join('');
+      }
+      
+      // Add a new room
+      function addNewRoom() {
+        const newRoomNameInput = document.getElementById('new-room-name');
+        const roomName = newRoomNameInput.value.trim();
+        
+        if (roomName === '') {
+          newRoomNameInput.classList.add('animate-shake');
+          setTimeout(() => {
+            newRoomNameInput.classList.remove('animate-shake');
+          }, 300);
+          return;
+        }
+        
+        // Create a new room object
+        const newRoom = {
+          id: generateId(),
+          name: roomName,
+          condition: 5,
+          notes: '',
+          photos: [],
+          urgent: false
+        };
+        
+        // Add to current inspection
+        state.currentInspection.rooms.push(newRoom);
+        
+        // Update the rooms list
+        const roomList = document.getElementById('room-list');
+        roomList.innerHTML = renderRoomsList();
+        
+        // Clear the input
+        newRoomNameInput.value = '';
+        
+        // Play sound
+        playSound('pop');
+        
+        // Automatically open the new room's inspection window
+        createRoomInspectionWindow(newRoom.id);
+      }
+      
+      // Delete a room
+      function deleteRoom(roomId) {
+        const roomIndex = state.currentInspection.rooms.findIndex(room => room.id === roomId);
+        if (roomIndex !== -1) {
+          state.currentInspection.rooms.splice(roomIndex, 1);
+          
+          // Update the rooms list
+          const roomList = document.getElementById('room-list');
+          if (roomList) {
+            roomList.innerHTML = renderRoomsList();
+          }
+          
+          // Play sound
+          playSound('trash');
+        }
+      }
+      
+      // Create room inspection window
+      function createRoomInspectionWindow(roomId) {
+        const room = state.currentInspection.rooms.find(r => r.id === roomId);
+        if (!room) return;
+        
+        const windowId = `window-room-${roomId}-${state.nextWindowId++}`;
+        const windowHtml = `
+          <div id="${windowId}" class="window" style="top: 100px; left: 200px; width: 650px;">
+            <div class="window-header">
+              <div class="window-title">Room Inspection: ${room.name}</div>
+              <div class="window-controls">
+                <div class="window-control window-close" data-window="${windowId}"></div>
+                <div class="window-control window-minimize" data-window="${windowId}"></div>
+                <div class="window-control window-maximize" data-window="${windowId}"></div>
+              </div>
+            </div>
+            <div class="window-content">
+              <div class="form-group">
+                <label class="form-label" for="room-condition-${roomId}">Condition Rating (1-10)</label>
+                <div class="rating">
+                  <input type="range" id="room-condition-${roomId}" class="rating-slider" min="1" max="10" value="${room.condition}">
+                  <div class="rating-value" id="room-condition-value-${roomId}">${room.condition}/10</div>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label" for="room-notes-${roomId}">Notes</label>
+                <textarea id="room-notes-${roomId}" class="form-textarea">${room.notes}</textarea>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Photos</label>
+                <div class="dropzone" id="dropzone-${roomId}">
+                  <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
+                  <p>Drag and drop photos here or click to select files</p>
+                  <input type="file" id="file-input-${roomId}" style="display: none;" accept="image/*" multiple>
+                </div>
+                <div id="photo-previews-${roomId}" class="photo-previews">
+                  ${renderPhotoPreviewsHtml(room.photos)}
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="toggle ${room.urgent ? 'active' : ''}" id="urgent-toggle-${roomId}">
+                  <span class="toggle-switch"></span>
+                  Mark as Urgent Issue
+                </label>
+              </div>
+              
+              <button id="save-room-btn-${roomId}" class="start-btn">Save Room Inspection</button>
+            </div>
+          </div>
+        `;
+        
+        elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
+        
+        const windowEl = document.getElementById(windowId);
+        
+        // Window controls
+        windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
+        windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
+        windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
+        
+        // Condition slider
+        const conditionSlider = windowEl.querySelector(`#room-condition-${roomId}`);
+        const conditionValue = windowEl.querySelector(`#room-condition-value-${roomId}`);
+        conditionSlider.addEventListener('input', () => {
+          conditionValue.textContent = `${conditionSlider.value}/10`;
+        });
+        
+        // Urgent toggle
+        const urgentToggle = windowEl.querySelector(`#urgent-toggle-${roomId}`);
+        urgentToggle.addEventListener('click', () => {
+          urgentToggle.classList.toggle('active');
+        });
+        
+        // File dropzone
+        const dropzone = windowEl.querySelector(`#dropzone-${roomId}`);
+        const fileInput = windowEl.querySelector(`#file-input-${roomId}`);
+        
+        dropzone.addEventListener('click', () => fileInput.click());
+        dropzone.addEventListener('dragover', (e) => {
+          e.preventDefault();
+          dropzone.classList.add('active');
+        });
+        dropzone.addEventListener('dragleave', () => {
+          dropzone.classList.remove('active');
+        });
+        dropzone.addEventListener('drop', (e) => {
+          e.preventDefault();
+          dropzone.classList.remove('active');
+          if (e.dataTransfer.files.length) {
+            handleFiles(e.dataTransfer.files, roomId);
+          }
+        });
+        fileInput.addEventListener('change', () => {
+          if (fileInput.files.length) {
+            handleFiles(fileInput.files, roomId);
+          }
+        });
+        
+        // Save room button
+        windowEl.querySelector(`#save-room-btn-${roomId}`).addEventListener('click', () => {
+          // Update room data
+          room.condition = parseInt(conditionSlider.value);
+          room.notes = windowEl.querySelector(`#room-notes-${roomId}`).value;
+          room.urgent = urgentToggle.classList.contains('active');
+          
+          // Update the rooms list in the management window
+          const roomsListEl = document.getElementById('room-list');
+          if (roomsListEl) {
+            roomsListEl.innerHTML = renderRoomsList();
+          }
+          
+          // Close the window
+          closeWindow(windowId);
+          
+          // Play sound
+          playSound('save');
+        });
+        
+        // Add window to state and bring to front
+        state.windows.push(windowId);
+        bringWindowToFront(windowId);
+        
+        // Animate window opening
+        windowEl.classList.add('animate-pop');
+        
+        // Play sound
+        playSound('window-open');
+      }
+      
+      // Handle file uploads
+      function handleFiles(files, roomId) {
+        const room = state.currentInspection.rooms.find(r => r.id === roomId);
+        if (!room) return;
+        
+        Array.from(files).forEach(file => {
+          if (!file.type.match('image.*')) return; // skip non-images
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const photoId = generateId();
+            room.photos.push({
+              id: photoId,
+              data: e.target.result,
+              name: file.name
+            });
+            
+            // Re-render photo previews
+            const previewsEl = document.getElementById(`photo-previews-${roomId}`);
+            if (previewsEl) {
+              previewsEl.innerHTML = renderPhotoPreviewsHtml(room.photos);
+              // Re-bind delete buttons
+              previewsEl.querySelectorAll('.photo-delete-btn').forEach(btn => {
+                btn.addEventListener('click', (evt) => {
+                  const pid = evt.currentTarget.dataset.id;
+                  deletePhoto(roomId, pid);
+                });
+              });
             }
             
-            // Load state from localStorage
-            function loadStateFromLocalStorage() {
-                try {
-                    const savedState = localStorage.getItem('propInspectState');
-                    if (savedState) {
-                        const parsedState = JSON.parse(savedState);
-                        state.darkMode = parsedState.darkMode || false;
-                        state.fontSize = parsedState.fontSize || 2;
-                        state.highContrast = parsedState.highContrast || false;
-                        state.savedInspections = parsedState.savedInspections || [];
-                    }
-                    
-                    // Apply saved preferences
-                    if (state.darkMode) {
-                        document.body.setAttribute('data-theme', 'dark');
-                    }
-                    document.body.classList.add(`font-size-${state.fontSize}`);
-                    if (state.highContrast) {
-                        document.body.classList.add('high-contrast');
-                    }
-                } catch (error) {
-                    console.error('Error loading state from localStorage:', error);
-                }
-            }
-            
-            // Save state to localStorage
-            function saveStateToLocalStorage() {
-                try {
-                    const stateToSave = {
-                        darkMode: state.darkMode,
-                        fontSize: state.fontSize,
-                        highContrast: state.highContrast,
-                        savedInspections: state.savedInspections
-                    };
-                    localStorage.setItem('propInspectState', JSON.stringify(stateToSave));
-                } catch (error) {
-                    console.error('Error saving state to localStorage:', error);
-                }
-            }
-            
-            // Render the start screen
-            function renderStartScreen() {
-                elements.startScreen.innerHTML = `
-                    <div class="start-screen-content animate-pop">
-                        <div class="logo">🏠 InspectSpace</div>
-                        <h1>Property Inspection Tool</h1>
-                        <p>Streamline your property inspections with our intuitive, user-friendly tool.</p>
-                        <button id="start-inspection-btn" class="start-btn">
-                            <i class="fas fa-clipboard-check"></i> Begin New Inspection
-                        </button>
-                        
-                        <div class="saved-reports">
-                            <h3>Saved Inspections</h3>
-                            <ul class="report-list" id="saved-reports-list">
-                                ${renderSavedReportsList()}
-                            </ul>
-                        </div>
-                    </div>
-                `;
+            playSound('camera');
+          };
+          reader.readAsDataURL(file);
+        });
+      }
+      
+      // Render photo previews HTML
+      function renderPhotoPreviewsHtml(photos) {
+        if (!photos || photos.length === 0) {
+          return '<p>No photos added yet.</p>';
+        }
+        
+        return `
+          <div class="photo-grid">
+            ${photos.map(photo => `
+              <div class="photo-item">
+                <img src="${photo.data}" alt="${photo.name}" class="image-preview">
+                <button class="photo-delete-btn" data-id="${photo.id}">
+                  <i class="fas fa-times"></i>
+                </button>
+              </div>
+            `).join('')}
+          </div>
+        `;
+      }
+      
+      // Delete a photo
+      function deletePhoto(roomId, photoId) {
+        const room = state.currentInspection.rooms.find(r => r.id === roomId);
+        if (!room) return;
+        
+        const photoIndex = room.photos.findIndex(p => p.id === photoId);
+        if (photoIndex !== -1) {
+          room.photos.splice(photoIndex, 1);
+          
+          const previewsEl = document.getElementById(`photo-previews-${roomId}`);
+          if (previewsEl) {
+            previewsEl.innerHTML = renderPhotoPreviewsHtml(room.photos);
+            // Re-bind delete buttons
+            previewsEl.querySelectorAll('.photo-delete-btn').forEach(btn => {
+              btn.addEventListener('click', (evt) => {
+                const pid = evt.currentTarget.dataset.id;
+                deletePhoto(roomId, pid);
+              });
+            });
+          }
+          
+          playSound('trash');
+        }
+      }
+      
+      // Create signatures window
+      function createSignaturesWindow() {
+        const windowId = `window-signatures-${state.nextWindowId++}`;
+        const windowHtml = `
+          <div id="${windowId}" class="window" style="top: 120px; left: 150px; width: 700px;">
+            <div class="window-header">
+              <div class="window-title">Signatures</div>
+              <div class="window-controls">
+                <div class="window-control window-close" data-window="${windowId}"></div>
+                <div class="window-control window-minimize" data-window="${windowId}"></div>
+                <div class="window-control window-maximize" data-window="${windowId}"></div>
+              </div>
+            </div>
+            <div class="window-content">
+              <h3>Property: ${state.currentInspection.propertyAddress}</h3>
+              <p>Please sign below to confirm the inspection details.</p>
+              
+              <div class="form-group">
+                <label class="form-label">Tenant Signature</label>
+                <canvas id="tenant-signature" class="signature-canvas" width="600" height="150"></canvas>
+                <div class="canvas-tools">
+                  <button id="tenant-clear-btn" class="canvas-tool">Clear</button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <label class="form-label">Agent Signature</label>
+                <canvas id="agent-signature" class="signature-canvas" width="600" height="150"></canvas>
+                <div class="canvas-tools">
+                  <button id="agent-clear-btn" class="canvas-tool">Clear</button>
+                </div>
+              </div>
+              
+              <div class="form-group">
+                <button id="complete-inspection-btn" class="start-btn">Complete Inspection</button>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
+        
+        const windowEl = document.getElementById(windowId);
+        
+        // Window controls
+        windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
+        windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
+        windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
+        
+        // Set up signature canvases
+        setupSignatureCanvas('tenant-signature', 'tenant-clear-btn');
+        setupSignatureCanvas('agent-signature', 'agent-clear-btn');
+        
+        // Complete inspection button
+        windowEl.querySelector('#complete-inspection-btn').addEventListener('click', completeInspection);
+        
+        // Add window to state and bring to front
+        state.windows.push(windowId);
+        bringWindowToFront(windowId);
+        
+        // Animate window opening
+        windowEl.classList.add('animate-pop');
+        
+        // Play sound
+        playSound('window-open');
+      }
+      
+      // Set up signature canvas
+      function setupSignatureCanvas(canvasId, clearBtnId) {
+        const canvas = document.getElementById(canvasId);
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+        let lastX = 0;
+        let lastY = 0;
+        
+        // Basic pen settings
+        ctx.lineJoin = 'round';
+        ctx.lineCap = 'round';
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = '#000000';
+        
+        // Mouse-based
+        canvas.addEventListener('mousedown', startDrawing);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('mouseout', stopDrawing);
+        
+        // Touch-based
+        canvas.addEventListener('touchstart', startDrawingTouch, { passive: false });
+        canvas.addEventListener('touchmove', drawTouch, { passive: false });
+        canvas.addEventListener('touchend', stopDrawing);
+        
+        document.getElementById(clearBtnId).addEventListener('click', () => {
+          ctx.clearRect(0, 0, canvas.width, canvas.height);
+        });
+        
+        function startDrawing(e) {
+          isDrawing = true;
+          [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+        function draw(e) {
+          if (!isDrawing) return;
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(e.offsetX, e.offsetY);
+          ctx.stroke();
+          [lastX, lastY] = [e.offsetX, e.offsetY];
+        }
+        function stopDrawing() {
+          isDrawing = false;
+        }
+        
+        function startDrawingTouch(e) {
+          e.preventDefault();
+          isDrawing = true;
+          const rect = canvas.getBoundingClientRect();
+          const touch = e.touches[0];
+          [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
+        }
+        function drawTouch(e) {
+          if (!isDrawing) return;
+          e.preventDefault();
+          const rect = canvas.getBoundingClientRect();
+          const touch = e.touches[0];
+          const x = touch.clientX - rect.left;
+          const y = touch.clientY - rect.top;
+          ctx.beginPath();
+          ctx.moveTo(lastX, lastY);
+          ctx.lineTo(x, y);
+          ctx.stroke();
+          [lastX, lastY] = [x, y];
+        }
+      }
+      
+      // Complete the inspection
+      function completeInspection() {
+        // Get signature data
+        const tenantSigCanvas = document.getElementById('tenant-signature');
+        const agentSigCanvas = document.getElementById('agent-signature');
+        
+        state.currentInspection.tenantSignature = tenantSigCanvas.toDataURL();
+        state.currentInspection.agentSignature = agentSigCanvas.toDataURL();
+        
+        // Save the inspection
+        saveCurrentInspection();
+        
+        // Open summary window
+        createSummaryWindow();
+        
+        // Play sound
+        playSound('success');
+      }
+      
+      // Create summary window
+      function createSummaryWindow() {
+        const windowId = `window-summary-${state.nextWindowId++}`;
+        const windowHtml = `
+          <div id="${windowId}" class="window" style="top: 50px; left: 100px; width: 700px;">
+            <div class="window-header">
+              <div class="window-title">Inspection Summary</div>
+              <div class="window-controls">
+                <div class="window-control window-close" data-window="${windowId}"></div>
+                <div class="window-control window-minimize" data-window="${windowId}"></div>
+                <div class="window-control window-maximize" data-window="${windowId}"></div>
+              </div>
+            </div>
+            <div class="window-content">
+              <h2>Inspection Completed!</h2>
+              <p>Property: ${state.currentInspection.propertyAddress}</p>
+              <p>Date: ${new Date(state.currentInspection.date).toLocaleDateString()}</p>
+              <p>Agent: ${state.currentInspection.agentName}</p>
+              <p>Tenant: ${state.currentInspection.tenantName}</p>
+              
+              <h3>Rooms Inspected: ${state.currentInspection.rooms.length}</h3>
+              <ul class="summary-list">
+                ${state.currentInspection.rooms.map(room => `
+                  <li class="summary-item ${room.urgent ? 'urgent' : ''}">
+                    <strong>${room.name}</strong> - Condition: ${room.condition}/10
+                    ${room.urgent ? '<span class="urgent-badge">URGENT</span>' : ''}
+                  </li>
+                `).join('')}
+              </ul>
+              
+              <div class="form-group" style="margin-top: 20px; display: flex; gap: 10px;">
+                <button id="export-pdf-summary-btn" class="start-btn">
+                  <i class="fas fa-file-pdf"></i> Export PDF
+                </button>
+                <button id="generate-qr-btn" class="start-btn">
+                  <i class="fas fa-qrcode"></i> Generate QR Code
+                </button>
+                <button id="return-home-btn" class="start-btn">
+                  <i class="fas fa-home"></i> Return to Home
+                </button>
+              </div>
+              
+              <div id="qrcode-container" style="margin-top: 20px; text-align: center; display: none;"></div>
+            </div>
+          </div>
+        `;
+        
+        elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
+        
+        const windowEl = document.getElementById(windowId);
+        
+        // Window controls
+        windowEl.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
+        windowEl.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
+        windowEl.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
+        
+        // Export PDF button
+        windowEl.querySelector('#export-pdf-summary-btn').addEventListener('click', exportToPDF);
+        // Generate QR Code button
+        windowEl.querySelector('#generate-qr-btn').addEventListener('click', generateQRCode);
+        // Return home button
+        windowEl.querySelector('#return-home-btn').addEventListener('click', returnToHome);
+        
+        // Add window to state and bring to front
+        state.windows.push(windowId);
+        bringWindowToFront(windowId);
+        
+        // Animate window opening
+        windowEl.classList.add('animate-pop');
+        
+        // Play sound
+        playSound('window-open');
+      }
+      
+      // Generate QR Code
+      function generateQRCode() {
+        const qrContainer = document.getElementById('qrcode-container');
+        qrContainer.style.display = 'block';
+        qrContainer.innerHTML = '';
+        
+        // Example data to encode in QR
+        const inspectionData = {
+          id: state.currentInspection.id,
+          propertyAddress: state.currentInspection.propertyAddress,
+          date: state.currentInspection.date
+        };
+        
+        const dataUrl = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(inspectionData))}`;
+        
+        new QRCode(qrContainer, {
+          text: dataUrl,
+          width: 200,
+          height: 200
+        });
+        
+        playSound('pop');
+      }
+      
+      // Save the current inspection
+      function saveCurrentInspection() {
+        if (!state.currentInspection) return;
+        
+        const existingIndex = state.savedInspections.findIndex(ins => ins.id === state.currentInspection.id);
+        if (existingIndex !== -1) {
+          // Update
+          state.savedInspections[existingIndex] = { ...state.currentInspection };
+        } else {
+          // Insert
+          state.savedInspections.push({ ...state.currentInspection });
+        }
+        saveStateToLocalStorage();
+        
+        playSound('save');
+      }
+      
+      // Load a saved inspection
+      function loadInspection(inspectionId) {
+        const inspection = state.savedInspections.find(ins => ins.id === inspectionId);
+        if (!inspection) return;
+        
+        state.currentInspection = { ...inspection };
+        
+        // Switch to main interface
+        elements.startScreen.classList.remove('active');
+        elements.mainInterface.classList.add('active');
+        
+        // Create the rooms management window
+        createRoomsManagementWindow();
+        
+        playSound('window-open');
+      }
+      
+      // Delete a saved inspection
+      function deleteInspection(inspectionId) {
+        const index = state.savedInspections.findIndex(ins => ins.id === inspectionId);
+        if (index !== -1) {
+          state.savedInspections.splice(index, 1);
+          saveStateToLocalStorage();
+          
+          // Re-render saved list
+          const reportsList = document.getElementById('saved-reports-list');
+          if (reportsList) {
+            reportsList.innerHTML = renderSavedReportsList();
+          }
+          
+          playSound('trash');
+        }
+      }
+      
+      // Export the inspection to PDF
+      function exportToPDF() {
+        if (!state.currentInspection) return;
+        
+        // Create a new window for PDF content
+        const pdfWindowId = `window-pdf-${state.nextWindowId++}`;
+        const pdfWindowHtml = `
+          <div id="${pdfWindowId}" class="window" style="top: 50px; left: 50px; width: 800px; height: 600px;">
+            <div class="window-header">
+              <div class="window-title">Generating PDF...</div>
+              <div class="window-controls">
+                <div class="window-control window-close" data-window="${pdfWindowId}"></div>
+              </div>
+            </div>
+            <div class="window-content">
+              <div id="pdf-content" style="padding: 20px; background-color: white;">
+                <div style="text-align: center; margin-bottom: 20px;">
+                  <h1 style="color: #3b82f6;">InspectSpace</h1>
+                  <h2>Property Inspection Report</h2>
+                </div>
                 
-                // Set up event listeners for the start screen
-                document.getElementById('start-inspection-btn').addEventListener('click', startNewInspection);
+                <div style="margin-bottom: 30px;">
+                  <h3>Property Details</h3>
+                  <p><strong>Address:</strong> ${state.currentInspection.propertyAddress}</p>
+                  <p><strong>Inspection Date:</strong> ${new Date(state.currentInspection.date).toLocaleDateString()}</p>
+                  <p><strong>Agent:</strong> ${state.currentInspection.agentName}</p>
+                  <p><strong>Tenant:</strong> ${state.currentInspection.tenantName}</p>
+                </div>
                 
-                // Event listeners for saved reports
-                const reportButtons = document.querySelectorAll('.report-item-btn');
-                reportButtons.forEach(button => {
-                    button.addEventListener('click', (e) => {
-                        e.stopPropagation();
-                        const reportId = button.closest('.report-item').dataset.id;
-                        
-                        if (button.classList.contains('load-btn')) {
-                            loadInspection(reportId);
-                        } else if (button.classList.contains('delete-btn')) {
-                            deleteInspection(reportId);
+                <div style="margin-bottom: 30px;">
+                  <h3>Room Inspections</h3>
+                  ${
+                    state.currentInspection.rooms.map(room => `
+                      <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px; ${room.urgent ? 'border-left: 5px solid #ef4444;' : ''}">
+                        <h4>${room.name} ${room.urgent ? '<span style="color: #ef4444;">(URGENT)</span>' : ''}</h4>
+                        <p><strong>Condition:</strong> ${room.condition}/10</p>
+                        <p><strong>Notes:</strong> ${room.notes || 'No notes provided.'}</p>
+                        ${
+                          room.photos.length > 0
+                            ? `
+                              <div>
+                                <p><strong>Photos:</strong></p>
+                                <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
+                                  ${room.photos.map(photo => `
+                                    <img src="${photo.data}" alt="${photo.name}" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
+                                  `).join('')}
+                                </div>
+                              </div>`
+                            : '<p><strong>Photos:</strong> No photos provided.</p>'
                         }
-                    });
-                });
+                      </div>
+                    `).join('')
+                  }
+                </div>
                 
-                // Event listeners for report items
-                const reportItems = document.querySelectorAll('.report-item');
-                reportItems.forEach(item => {
-                    item.addEventListener('click', () => {
-                        const reportId = item.dataset.id;
-                        loadInspection(reportId);
-                    });
-                });
-            }
-            
-            // Render saved reports list
-            function renderSavedReportsList() {
-                if (state.savedInspections.length === 0) {
-                    return '<li class="report-item-empty">No saved inspections found.</li>';
-                }
-                
-                return state.savedInspections.map(inspection => `
-                    <li class="report-item" data-id="${inspection.id}">
-                        <div class="report-item-info">
-                            <div class="report-item-address">${inspection.propertyAddress}</div>
-                            <div class="report-item-date">${new Date(inspection.date).toLocaleDateString()}</div>
-                        </div>
-                        <div class="report-item-actions">
-                            <button class="report-item-btn load-btn" title="Load Inspection">
-                                <i class="fas fa-folder-open"></i>
-                            </button>
-                            <button class="report-item-btn delete-btn" title="Delete Inspection">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </li>
-                `).join('');
-            }
-            
-            // Render toolbar
-            function renderToolbar() {
-                elements.toolbar.innerHTML = `
-                    <div class="toolbar-title">InspectSpace</div>
-                    <div class="toolbar-actions">
-                        <button id="new-inspection-btn" class="toolbar-btn" title="New Inspection">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                        <button id="save-inspection-btn" class="toolbar-btn" title="Save Inspection">
-                            <i class="fas fa-save"></i>
-                        </button>
-                        <button id="export-pdf-btn" class="toolbar-btn" title="Export PDF">
-                            <i class="fas fa-file-pdf"></i>
-                        </button>
-                        <button id="settings-btn" class="toolbar-btn" title="Settings">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                        <button id="home-btn" class="toolbar-btn" title="Return to Home">
-                            <i class="fas fa-home"></i>
-                        </button>
-                    </div>
-                `;
-            }
-            
-            // Render settings panel
-            function renderSettingsPanel() {
-                elements.settingsPanel.innerHTML = `
-                    <div class="settings-header">
-                        <h3>Settings</h3>
-                        <button id="settings-close-btn" class="settings-close">
-                            <i class="fas fa-times"></i>
-                        </button>
+                <div style="margin-bottom: 30px;">
+                  <h3>Signatures</h3>
+                  <div style="display: flex; flex-wrap: wrap; gap: 20px;">
+                    <div style="flex: 1; min-width: 300px;">
+                      <p><strong>Tenant Signature:</strong></p>
+                      ${
+                        state.currentInspection.tenantSignature
+                          ? `<img src="${state.currentInspection.tenantSignature}" alt="Tenant Signature" style="max-width: 100%; border: 1px solid #d1d5db; border-radius: 5px;">`
+                          : '<p>No signature provided.</p>'
+                      }
                     </div>
                     
-                    <div class="settings-section">
-                        <h4 class="settings-title">Appearance</h4>
-                        
-                        <div class="form-group">
-                            <label class="toggle ${state.darkMode ? 'active' : ''}" id="dark-mode-toggle">
-                                <span class="toggle-switch"></span>
-                                Dark Mode
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="toggle ${state.highContrast ? 'active' : ''}" id="high-contrast-toggle">
-                                <span class="toggle-switch"></span>
-                                High Contrast
-                            </label>
-                        </div>
-                        
-                        <div class="form-group">
-                            <label class="form-label">Font Size</label>
-                            <div class="font-size-controls">
-                                <button id="font-size-decrease" class="canvas-tool">A-</button>
-                                <button id="font-size-reset" class="canvas-tool">Reset</button>
-                                <button id="font-size-increase" class="canvas-tool">A+</button>
-                            </div>
-                        </div>
+                    <div style="flex: 1; min-width: 300px;">
+                      <p><strong>Agent Signature:</strong></p>
+                      ${
+                        state.currentInspection.agentSignature
+                          ? `<img src="${state.currentInspection.agentSignature}" alt="Agent Signature" style="max-width: 100%; border: 1px solid #d1d5db; border-radius: 5px;">`
+                          : '<p>No signature provided.</p>'
+                      }
                     </div>
-                    
-                    <div class="settings-section">
-                        <h4 class="settings-title">Templates</h4>
-                        
-                        <div class="form-group">
-                            <button id="load-template-btn" class="start-btn">Load Default Rooms</button>
-                        </div>
-                    </div>
-                    
-                    <div class="settings-section">
-                        <h4 class="settings-title">About</h4>
-                        <p>InspectSpace v1.0</p>
-                        <p>A property inspection tool for letting agents.</p>
-                        <p>© 2025 InspectSpace</p>
-                    </div>
-                `;
+                  </div>
+                </div>
+                
+                <div style="text-align: center; margin-top: 50px; color: #6b7280; font-size: 0.8rem;">
+                  <p>Generated by InspectSpace - ${new Date().toLocaleDateString()}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        elements.desktop.insertAdjacentHTML('beforeend', pdfWindowHtml);
+        
+        // Add window to state and bring to front
+        state.windows.push(pdfWindowId);
+        bringWindowToFront(pdfWindowId);
+        
+        // Close button
+        document.querySelector(`#${pdfWindowId} .window-close`).addEventListener('click', () => closeWindow(pdfWindowId));
+        
+        // Generate the PDF after a brief delay
+        setTimeout(() => {
+          const element = document.getElementById('pdf-content');
+          const opt = {
+            margin: 10,
+            filename: `InspectSpace_${state.currentInspection.propertyAddress.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
+            image: { type: 'jpeg', quality: 0.98 },
+            html2canvas: { scale: 2 },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+          };
+          
+          html2pdf().set(opt).from(element).save().then(() => {
+            // Update window title
+            const titleEl = document.querySelector(`#${pdfWindowId} .window-title`);
+            if (titleEl) {
+              titleEl.textContent = 'PDF Generated';
             }
-            
-            // Set up event listeners
-            function setupEventListeners() {
-                // Toolbar buttons
-                document.getElementById('new-inspection-btn').addEventListener('click', startNewInspection);
-                document.getElementById('save-inspection-btn').addEventListener('click', saveCurrentInspection);
-                document.getElementById('export-pdf-btn').addEventListener('click', exportToPDF);
-                document.getElementById('settings-btn').addEventListener('click', toggleSettingsPanel);
-                document.getElementById('home-btn').addEventListener('click', returnToHome);
-                
-                // Settings panel
-                document.getElementById('settings-close-btn').addEventListener('click', toggleSettingsPanel);
-                document.getElementById('dark-mode-toggle').addEventListener('click', toggleDarkMode);
-                document.getElementById('high-contrast-toggle').addEventListener('click', toggleHighContrast);
-                document.getElementById('font-size-decrease').addEventListener('click', decreaseFontSize);
-                document.getElementById('font-size-reset').addEventListener('click', resetFontSize);
-                document.getElementById('font-size-increase').addEventListener('click', increaseFontSize);
-                document.getElementById('load-template-btn').addEventListener('click', loadDefaultRooms);
-                
-                // Make windows draggable
-                setupInteract();
-            }
-            
-            // Set up interact.js for draggable windows
-            function setupInteract() {
-                interact('.window')
-                    .draggable({
-                        allowFrom: '.window-header',
-                        modifiers: [
-                            interact.modifiers.restrict({
-                                restriction: 'parent',
-                                endOnly: true
-                            })
-                        ],
-                        listeners: {
-                            move: dragMoveListener,
-                            start: dragStartListener
-                        }
-                    });
-                
-                function dragMoveListener(event) {
-                    const target = event.target;
-                    
-                    // Keep the dragged position in the data-x/data-y attributes
-                    const x = (parseFloat(target.getAttribute('data-x')) || 0) + event.dx;
-                    const y = (parseFloat(target.getAttribute('data-y')) || 0) + event.dy;
-                    
-                    // Translate the element
-                    target.style.transform = `translate(${x}px, ${y}px)`;
-                    
-                    // Update the position attributes
-                    target.setAttribute('data-x', x);
-                    target.setAttribute('data-y', y);
-                }
-                
-                function dragStartListener(event) {
-                    const windowId = event.target.id;
-                    bringWindowToFront(windowId);
-                }
-            }
-            
-            // Start a new inspection
-            function startNewInspection() {
-                // Create a new inspection object
-                state.currentInspection = {
-                    id: generateId(),
-                    date: new Date().toISOString(),
-                    propertyAddress: '',
-                    agentName: '',
-                    tenantName: '',
-                    rooms: []
-                };
-                
-                // Switch to main interface
-                elements.startScreen.classList.remove('active');
-                elements.mainInterface.classList.add('active');
-                
-                // Create property details window
-                createPropertyDetailsWindow();
-                
-                // Play sound
-                playSound('window-open');
-            }
-            
-            // Create property details window
-            function createPropertyDetailsWindow() {
-                const windowId = `window-property-${state.nextWindowId++}`;
-                const windowHtml = `
-                    <div id="${windowId}" class="window" style="top: 50px; left: 50px; width: 500px;">
-                        <div class="window-header">
-                            <div class="window-title">Property Details</div>
-                            <div class="window-controls">
-                                <div class="window-control window-close" data-window="${windowId}"></div>
-                                <div class="window-control window-minimize" data-window="${windowId}"></div>
-                                <div class="window-control window-maximize" data-window="${windowId}"></div>
-                            </div>
-                        </div>
-                        <div class="window-content">
-                            <form id="property-form">
-                                <div class="form-group">
-                                    <label class="form-label" for="property-address">Property Address</label>
-                                    <input type="text" id="property-address" class="form-input" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label" for="inspection-date">Inspection Date</label>
-                                    <input type="date" id="inspection-date" class="form-input" value="${new Date().toISOString().split('T')[0]}" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label" for="agent-name">Agent Name</label>
-                                    <input type="text" id="agent-name" class="form-input" required>
-                                </div>
-                                
-                                <div class="form-group">
-                                    <label class="form-label" for="tenant-name">Tenant Name</label>
-                                    <input type="text" id="tenant-name" class="form-input" required>
-                                </div>
-                                
-                                <button type="submit" class="start-btn">Continue to Inspection</button>
-                            </form>
-                        </div>
-                    </div>
-                `;
-                
-                elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
-                
-                // Set up event listeners for the window
-                const window = document.getElementById(windowId);
-                
-                // Window controls
-                window.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
-                window.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
-                window.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
-                
-                // Form submission
-                window.querySelector('#property-form').addEventListener('submit', (e) => {
-                    e.preventDefault();
-                    
-                    // Save property details
-                    state.currentInspection.propertyAddress = document.getElementById('property-address').value;
-                    state.currentInspection.date = document.getElementById('inspection-date').value;
-                    state.currentInspection.agentName = document.getElementById('agent-name').value;
-                    state.currentInspection.tenantName = document.getElementById('tenant-name').value;
-                    
-                    // Close property window
-                    closeWindow(windowId);
-                    
-                    // Create rooms management window
-                    createRoomsManagementWindow();
-                });
-                
-                // Add window to state and bring to front
-                state.windows.push(windowId);
-                bringWindowToFront(windowId);
-                
-                // Animate window opening
-                window.classList.add('animate-pop');
-            }
-            
-            // Create rooms management window
-            function createRoomsManagementWindow() {
-                const windowId = `window-rooms-${state.nextWindowId++}`;
-                const windowHtml = `
-                    <div id="${windowId}" class="window" style="top: 80px; left: 80px; width: 600px;">
-                        <div class="window-header">
-                            <div class="window-title">Rooms Management</div>
-                            <div class="window-controls">
-                                <div class="window-control window-close" data-window="${windowId}"></div>
-                                <div class="window-control window-minimize" data-window="${windowId}"></div>
-                                <div class="window-control window-maximize" data-window="${windowId}"></div>
-                            </div>
-                        </div>
-                        <div class="window-content">
-                            <h3>Property: ${state.currentInspection.propertyAddress}</h3>
-                            <p>Add rooms to inspect and click on them to begin inspection.</p>
-                            
-                            <ul id="room-list" class="room-list">
-                                ${renderRoomsList()}
-                            </ul>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="new-room-name">Add New Room</label>
-                                <div style="display: flex; gap: 10px;">
-                                    <input type="text" id="new-room-name" class="form-input" placeholder="Room name (e.g. Kitchen, Bedroom 1)">
-                                    <button id="add-room-btn" class="add-room">
-                                        <i class="fas fa-plus"></i> Add
-                                    </button>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group" style="margin-top: 20px;">
-                                <button id="signatures-btn" class="start-btn">Proceed to Signatures</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
-                
-                // Set up event listeners for the window
-                const window = document.getElementById(windowId);
-                
-                // Window controls
-                window.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
-                window.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
-                window.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
-                
-                // Add room button
-                window.querySelector('#add-room-btn').addEventListener('click', addNewRoom);
-                
-                // Signatures button
-                window.querySelector('#signatures-btn').addEventListener('click', () => {
-                    createSignaturesWindow();
-                });
-                
-                // Add window to state and bring to front
-                state.windows.push(windowId);
-                bringWindowToFront(windowId);
-                
-                // Animate window opening
-                window.classList.add('animate-pop');
-                
-                // Play sound
-                playSound('window-open');
-                
-                // Set up event delegation for room list actions
-                const roomList = window.querySelector('#room-list');
-                roomList.addEventListener('click', (e) => {
-                    const target = e.target;
-                    
-                    // Check if a room name was clicked
-                    if (target.classList.contains('room-name') || target.parentElement.classList.contains('room-item')) {
-                        const roomItem = target.closest('.room-item');
-                        const roomId = roomItem.dataset.id;
-                        createRoomInspectionWindow(roomId);
-                    }
-                    
-                    // Check if edit button was clicked
-                    if (target.classList.contains('edit-btn') || target.parentElement.classList.contains('edit-btn')) {
-                        const roomItem = target.closest('.room-item');
-                        const roomId = roomItem.dataset.id;
-                        createRoomInspectionWindow(roomId);
-                        e.stopPropagation();
-                    }
-                    
-                    // Check if delete button was clicked
-                    if (target.classList.contains('delete-btn') || target.parentElement.classList.contains('delete-btn')) {
-                        const roomItem = target.closest('.room-item');
-                        const roomId = roomItem.dataset.id;
-                        deleteRoom(roomId);
-                        e.stopPropagation();
-                    }
-                });
-            }
-            
-            // Render rooms list
-            function renderRoomsList() {
-                if (state.currentInspection.rooms.length === 0) {
-                    return '<li class="room-item-empty">No rooms added yet.</li>';
-                }
-                
-                return state.currentInspection.rooms.map(room => `
-                    <li class="room-item ${room.urgent ? 'urgent' : ''}" data-id="${room.id}">
-                        <div class="room-name">${room.name}</div>
-                        <div class="room-actions">
-                            <button class="room-btn edit-btn" title="Edit Room">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="room-btn delete-btn" title="Delete Room">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    </li>
-                `).join('');
-            }
-            
-            // Add a new room
-            function addNewRoom() {
-                const newRoomNameInput = document.getElementById('new-room-name');
-                const roomName = newRoomNameInput.value.trim();
-                
-                if (roomName === '') {
-                    newRoomNameInput.classList.add('animate-shake');
-                    setTimeout(() => {
-                        newRoomNameInput.classList.remove('animate-shake');
-                    }, 300);
-                    return;
-                }
-                
-                // Create a new room object
-                const newRoom = {
-                    id: generateId(),
-                    name: roomName,
-                    condition: 5,
-                    notes: '',
-                    photos: [],
-                    urgent: false
-                };
-                
-                // Add to current inspection
-                state.currentInspection.rooms.push(newRoom);
-                
-                // Update the rooms list
-                document.getElementById('room-list').innerHTML = renderRoomsList();
-                
-                // Clear the input
-                newRoomNameInput.value = '';
-                
-                // Play sound
-                playSound('pop');
-                
-                // Create and open the room inspection window for the new room
-                createRoomInspectionWindow(newRoom.id);
-            }
-            
-            // Delete a room
-            function deleteRoom(roomId) {
-                // Find the room index
-                const roomIndex = state.currentInspection.rooms.findIndex(room => room.id === roomId);
-                
-                if (roomIndex !== -1) {
-                    // Remove the room from the inspection
-                    state.currentInspection.rooms.splice(roomIndex, 1);
-                    
-                    // Update the rooms list
-                    document.getElementById('room-list').innerHTML = renderRoomsList();
-                    
-                    // Play sound
-                    playSound('trash');
-                }
-            }
-            
-            // Create room inspection window
-            function createRoomInspectionWindow(roomId) {
-                // Find the room
-                const room = state.currentInspection.rooms.find(room => room.id === roomId);
-                
-                if (!room) return;
-                
-                const windowId = `window-room-${roomId}-${state.nextWindowId++}`;
-                const windowHtml = `
-                    <div id="${windowId}" class="window" style="top: 100px; left: 200px; width: 650px;">
-                        <div class="window-header">
-                            <div class="window-title">Room Inspection: ${room.name}</div>
-                            <div class="window-controls">
-                                <div class="window-control window-close" data-window="${windowId}"></div>
-                                <div class="window-control window-minimize" data-window="${windowId}"></div>
-                                <div class="window-control window-maximize" data-window="${windowId}"></div>
-                            </div>
-                        </div>
-                        <div class="window-content">
-                            <div class="form-group">
-                                <label class="form-label" for="room-condition-${roomId}">Condition Rating (1-10)</label>
-                                <div class="rating">
-                                    <input type="range" id="room-condition-${roomId}" class="rating-slider" min="1" max="10" value="${room.condition}">
-                                    <div class="rating-value" id="room-condition-value-${roomId}">${room.condition}/10</div>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label" for="room-notes-${roomId}">Notes</label>
-                                <textarea id="room-notes-${roomId}" class="form-textarea">${room.notes}</textarea>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">Photos</label>
-                                <div class="dropzone" id="dropzone-${roomId}">
-                                    <i class="fas fa-cloud-upload-alt" style="font-size: 2rem; margin-bottom: 10px;"></i>
-                                    <p>Drag and drop photos here or click to select files</p>
-                                    <input type="file" id="file-input-${roomId}" style="display: none;" accept="image/*" multiple>
-                                </div>
-                                <div id="photo-previews-${roomId}" class="photo-previews">
-                                    ${renderPhotoPreviewsHtml(room.photos)}
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="toggle ${room.urgent ? 'active' : ''}" id="urgent-toggle-${roomId}">
-                                    <span class="toggle-switch"></span>
-                                    Mark as Urgent Issue
-                                </label>
-                            </div>
-                            
-                            <button id="save-room-btn-${roomId}" class="start-btn">Save Room Inspection</button>
-                        </div>
-                    </div>
-                `;
-                
-                elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
-                
-                // Set up event listeners for the window
-                const window = document.getElementById(windowId);
-                
-                // Window controls
-                window.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
-                window.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
-                window.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
-                
-                // Condition slider
-                const conditionSlider = window.querySelector(`#room-condition-${roomId}`);
-                const conditionValue = window.querySelector(`#room-condition-value-${roomId}`);
-                
-                conditionSlider.addEventListener('input', () => {
-                    conditionValue.textContent = `${conditionSlider.value}/10`;
-                });
-                
-                // Urgent toggle
-                const urgentToggle = window.querySelector(`#urgent-toggle-${roomId}`);
-                urgentToggle.addEventListener('click', () => {
-                    urgentToggle.classList.toggle('active');
-                });
-                
-                // File dropzone
-                const dropzone = window.querySelector(`#dropzone-${roomId}`);
-                const fileInput = window.querySelector(`#file-input-${roomId}`);
-                
-                dropzone.addEventListener('click', () => {
-                    fileInput.click();
-                });
-                
-                dropzone.addEventListener('dragover', (e) => {
-                    e.preventDefault();
-                    dropzone.classList.add('active');
-                });
-                
-                dropzone.addEventListener('dragleave', () => {
-                    dropzone.classList.remove('active');
-                });
-                
-                dropzone.addEventListener('drop', (e) => {
-                    e.preventDefault();
-                    dropzone.classList.remove('active');
-                    
-                    if (e.dataTransfer.files.length) {
-                        handleFiles(e.dataTransfer.files, roomId);
-                    }
-                });
-                
-                fileInput.addEventListener('change', () => {
-                    if (fileInput.files.length) {
-                        handleFiles(fileInput.files, roomId);
-                    }
-                });
-                
-                // Save room button
-                window.querySelector(`#save-room-btn-${roomId}`).addEventListener('click', () => {
-                    // Update room data
-                    room.condition = parseInt(conditionSlider.value);
-                    room.notes = window.querySelector(`#room-notes-${roomId}`).value;
-                    room.urgent = urgentToggle.classList.contains('active');
-                    
-                    // Update the rooms list in the management window
-                    const roomList = document.getElementById('room-list');
-                    if (roomList) {
-                        roomList.innerHTML = renderRoomsList();
-                    }
-                    
-                    // Close the window
-                    closeWindow(windowId);
-                    
-                    // Play sound
-                    playSound('save');
-                });
-                
-                // Add window to state and bring to front
-                state.windows.push(windowId);
-                bringWindowToFront(windowId);
-                
-                // Animate window opening
-                window.classList.add('animate-pop');
-                
-                // Play sound
-                playSound('window-open');
-            }
-            
-            // Handle file uploads
-            function handleFiles(files, roomId) {
-                // Find the room
-                const room = state.currentInspection.rooms.find(room => room.id === roomId);
-                
-                if (!room) return;
-                
-                // Process each file
-                Array.from(files).forEach(file => {
-                    // Check if it's an image
-                    if (!file.type.match('image.*')) return;
-                    
-                    // Create a FileReader
-                    const reader = new FileReader();
-                    
-                    reader.onload = (e) => {
-                        // Add the photo to the room
-                        const photoId = generateId();
-                        room.photos.push({
-                            id: photoId,
-                            data: e.target.result,
-                            name: file.name
-                        });
-                        
-                        // Update photo previews
-                        document.getElementById(`photo-previews-${roomId}`).innerHTML = renderPhotoPreviewsHtml(room.photos);
-                        
-                        // Set up event listeners for the delete buttons
-                        document.querySelectorAll(`.photo-delete-btn`).forEach(btn => {
-                            btn.addEventListener('click', (e) => {
-                                const photoId = e.currentTarget.dataset.id;
-                                deletePhoto(roomId, photoId);
-                            });
-                        });
-                        
-                        // Play sound
-                        playSound('camera');
-                    };
-                    
-                    // Read the file as a data URL
-                    reader.readAsDataURL(file);
-                });
-            }
-            
-            // Render photo previews HTML
-            function renderPhotoPreviewsHtml(photos) {
-                if (photos.length === 0) {
-                    return '<p>No photos added yet.</p>';
-                }
-                
-                return `
-                    <div class="photo-grid">
-                        ${photos.map(photo => `
-                            <div class="photo-item">
-                                <img src="${photo.data}" alt="${photo.name}" class="image-preview">
-                                <button class="photo-delete-btn" data-id="${photo.id}">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        `).join('')}
-                    </div>
-                `;
-            }
-            
-            // Delete a photo
-            function deletePhoto(roomId, photoId) {
-                // Find the room
-                const room = state.currentInspection.rooms.find(room => room.id === roomId);
-                
-                if (!room) return;
-                
-                // Find the photo index
-                const photoIndex = room.photos.findIndex(photo => photo.id === photoId);
-                
-                if (photoIndex !== -1) {
-                    // Remove the photo
-                    room.photos.splice(photoIndex, 1);
-                    
-                    // Update photo previews
-                    document.getElementById(`photo-previews-${roomId}`).innerHTML = renderPhotoPreviewsHtml(room.photos);
-                    
-                    // Set up event listeners for the delete buttons
-                    document.querySelectorAll(`.photo-delete-btn`).forEach(btn => {
-                        btn.addEventListener('click', (e) => {
-                            const photoId = e.currentTarget.dataset.id;
-                            deletePhoto(roomId, photoId);
-                        });
-                    });
-                    
-                    // Play sound
-                    playSound('trash');
-                }
-            }
-            
-            // Create signatures window
-            function createSignaturesWindow() {
-                const windowId = `window-signatures-${state.nextWindowId++}`;
-                const windowHtml = `
-                    <div id="${windowId}" class="window" style="top: 120px; left: 150px; width: 700px;">
-                        <div class="window-header">
-                            <div class="window-title">Signatures</div>
-                            <div class="window-controls">
-                                <div class="window-control window-close" data-window="${windowId}"></div>
-                                <div class="window-control window-minimize" data-window="${windowId}"></div>
-                                <div class="window-control window-maximize" data-window="${windowId}"></div>
-                            </div>
-                        </div>
-                        <div class="window-content">
-                            <h3>Property: ${state.currentInspection.propertyAddress}</h3>
-                            <p>Please sign below to confirm the inspection details.</p>
-                            
-                            <div class="form-group">
-                                <label class="form-label">Tenant Signature</label>
-                                <canvas id="tenant-signature" class="signature-canvas" width="600" height="150"></canvas>
-                                <div class="canvas-tools">
-                                    <button id="tenant-clear-btn" class="canvas-tool">Clear</button>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <label class="form-label">Agent Signature</label>
-                                <canvas id="agent-signature" class="signature-canvas" width="600" height="150"></canvas>
-                                <div class="canvas-tools">
-                                    <button id="agent-clear-btn" class="canvas-tool">Clear</button>
-                                </div>
-                            </div>
-                            
-                            <div class="form-group">
-                                <button id="complete-inspection-btn" class="start-btn">Complete Inspection</button>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
-                
-                // Set up event listeners for the window
-                const window = document.getElementById(windowId);
-                
-                // Window controls
-                window.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
-                window.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
-                window.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
-                
-                // Set up signature canvases
-                setupSignatureCanvas('tenant-signature', 'tenant-clear-btn');
-                setupSignatureCanvas('agent-signature', 'agent-clear-btn');
-                
-                // Complete inspection button
-                window.querySelector('#complete-inspection-btn').addEventListener('click', completeInspection);
-                
-                // Add window to state and bring to front
-                state.windows.push(windowId);
-                bringWindowToFront(windowId);
-                
-                // Animate window opening
-                window.classList.add('animate-pop');
-                
-                // Play sound
-                playSound('window-open');
-            }
-            
-            // Set up signature canvas
-            function setupSignatureCanvas(canvasId, clearBtnId) {
-                const canvas = document.getElementById(canvasId);
-                const ctx = canvas.getContext('2d');
-                let isDrawing = false;
-                let lastX = 0;
-                let lastY = 0;
-                
-                // Set up canvas
-                ctx.lineJoin = 'round';
-                ctx.lineCap = 'round';
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = '#000000';
-                
-                // Event listeners for drawing
-                canvas.addEventListener('mousedown', startDrawing);
-                canvas.addEventListener('touchstart', startDrawingTouch);
-                
-                canvas.addEventListener('mousemove', draw);
-                canvas.addEventListener('touchmove', drawTouch);
-                
-                canvas.addEventListener('mouseup', stopDrawing);
-                canvas.addEventListener('touchend', stopDrawing);
-                
-                canvas.addEventListener('mouseout', stopDrawing);
-                
-                // Clear button
-                document.getElementById(clearBtnId).addEventListener('click', () => {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                });
-                
-                function startDrawing(e) {
-                    isDrawing = true;
-                    [lastX, lastY] = [e.offsetX, e.offsetY];
-                }
-                
-                function startDrawingTouch(e) {
-                    e.preventDefault();
-                    isDrawing = true;
-                    const rect = canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    [lastX, lastY] = [touch.clientX - rect.left, touch.clientY - rect.top];
-                }
-                
-                function draw(e) {
-                    if (!isDrawing) return;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(lastX, lastY);
-                    ctx.lineTo(e.offsetX, e.offsetY);
-                    ctx.stroke();
-                    
-                    [lastX, lastY] = [e.offsetX, e.offsetY];
-                }
-                
-                function drawTouch(e) {
-                    if (!isDrawing) return;
-                    e.preventDefault();
-                    
-                    const rect = canvas.getBoundingClientRect();
-                    const touch = e.touches[0];
-                    const x = touch.clientX - rect.left;
-                    const y = touch.clientY - rect.top;
-                    
-                    ctx.beginPath();
-                    ctx.moveTo(lastX, lastY);
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
-                    
-                    [lastX, lastY] = [x, y];
-                }
-                
-                function stopDrawing() {
-                    isDrawing = false;
-                }
-            }
-            
-            // Complete the inspection
-            function completeInspection() {
-                // Get signature data
-                const tenantSignatureCanvas = document.getElementById('tenant-signature');
-                const agentSignatureCanvas = document.getElementById('agent-signature');
-                
-                state.currentInspection.tenantSignature = tenantSignatureCanvas.toDataURL();
-                state.currentInspection.agentSignature = agentSignatureCanvas.toDataURL();
-                
-                // Save the inspection
-                saveCurrentInspection();
-                
-                // Open summary window
-                createSummaryWindow();
-                
-                // Play sound
-                playSound('success');
-            }
-            
-            // Create summary window
-            function createSummaryWindow() {
-                const windowId = `window-summary-${state.nextWindowId++}`;
-                const windowHtml = `
-                    <div id="${windowId}" class="window" style="top: 50px; left: 100px; width: 700px;">
-                        <div class="window-header">
-                            <div class="window-title">Inspection Summary</div>
-                            <div class="window-controls">
-                                <div class="window-control window-close" data-window="${windowId}"></div>
-                                <div class="window-control window-minimize" data-window="${windowId}"></div>
-                                <div class="window-control window-maximize" data-window="${windowId}"></div>
-                            </div>
-                        </div>
-                        <div class="window-content">
-                            <h2>Inspection Completed!</h2>
-                            <p>Property: ${state.currentInspection.propertyAddress}</p>
-                            <p>Date: ${new Date(state.currentInspection.date).toLocaleDateString()}</p>
-                            <p>Agent: ${state.currentInspection.agentName}</p>
-                            <p>Tenant: ${state.currentInspection.tenantName}</p>
-                            
-                            <h3>Rooms Inspected: ${state.currentInspection.rooms.length}</h3>
-                            <ul class="summary-list">
-                                ${state.currentInspection.rooms.map(room => `
-                                    <li class="summary-item ${room.urgent ? 'urgent' : ''}">
-                                        <strong>${room.name}</strong> - Condition: ${room.condition}/10
-                                        ${room.urgent ? '<span class="urgent-badge">URGENT</span>' : ''}
-                                    </li>
-                                `).join('')}
-                            </ul>
-                            
-                            <div class="form-group" style="margin-top: 20px; display: flex; gap: 10px;">
-                                <button id="export-pdf-summary-btn" class="start-btn">
-                                    <i class="fas fa-file-pdf"></i> Export PDF
-                                </button>
-                                <button id="generate-qr-btn" class="start-btn">
-                                    <i class="fas fa-qrcode"></i> Generate QR Code
-                                </button>
-                                <button id="return-home-btn" class="start-btn">
-                                    <i class="fas fa-home"></i> Return to Home
-                                </button>
-                            </div>
-                            
-                            <div id="qrcode-container" style="margin-top: 20px; text-align: center; display: none;"></div>
-                        </div>
-                    </div>
-                `;
-                
-                elements.desktop.insertAdjacentHTML('beforeend', windowHtml);
-                
-                // Set up event listeners for the window
-                const window = document.getElementById(windowId);
-                
-                // Window controls
-                window.querySelector('.window-close').addEventListener('click', () => closeWindow(windowId));
-                window.querySelector('.window-minimize').addEventListener('click', () => minimizeWindow(windowId));
-                window.querySelector('.window-maximize').addEventListener('click', () => maximizeWindow(windowId));
-                
-                // Export PDF button
-                window.querySelector('#export-pdf-summary-btn').addEventListener('click', exportToPDF);
-                
-                // Generate QR Code button
-                window.querySelector('#generate-qr-btn').addEventListener('click', generateQRCode);
-                
-                // Return home button
-                window.querySelector('#return-home-btn').addEventListener('click', returnToHome);
-                
-                // Add window to state and bring to front
-                state.windows.push(windowId);
-                bringWindowToFront(windowId);
-                
-                // Animate window opening
-                window.classList.add('animate-pop');
-                
-                // Play sound
-                playSound('window-open');
-            }
-            
-            // Generate QR Code
-            function generateQRCode() {
-                const qrContainer = document.getElementById('qrcode-container');
-                qrContainer.style.display = 'block';
-                qrContainer.innerHTML = '';
-                
-                // Create a data URL for the inspection
-                const inspectionData = {
-                    id: state.currentInspection.id,
-                    propertyAddress: state.currentInspection.propertyAddress,
-                    date: state.currentInspection.date
-                };
-                
-                const dataUrl = `data:text/json;charset=utf-8,${encodeURIComponent(JSON.stringify(inspectionData))}`;
-                
-                // Generate QR Code
-                new QRCode(qrContainer, {
-                    text: dataUrl,
-                    width: 200,
-                    height: 200
-                });
-                
-                // Play sound
-                playSound('pop');
-            }
-            
-            // Save the current inspection
-            function saveCurrentInspection() {
-                if (!state.currentInspection) return;
-                
-                // Check if this inspection already exists in saved inspections
-                const existingIndex = state.savedInspections.findIndex(inspection => inspection.id === state.currentInspection.id);
-                
-                if (existingIndex !== -1) {
-                    // Update existing inspection
-                    state.savedInspections[existingIndex] = { ...state.currentInspection };
-                } else {
-                    // Add new inspection
-                    state.savedInspections.push({ ...state.currentInspection });
-                }
-                
-                // Save to localStorage
-                saveStateToLocalStorage();
-                
-                // Play sound
-                playSound('save');
-            }
-            
-            // Load a saved inspection
-            function loadInspection(inspectionId) {
-                // Find the inspection
-                const inspection = state.savedInspections.find(inspection => inspection.id === inspectionId);
-                
-                if (!inspection) return;
-                
-                // Set as current inspection
-                state.currentInspection = { ...inspection };
-                
-                // Switch to main interface
-                elements.startScreen.classList.remove('active');
-                elements.mainInterface.classList.add('active');
-                
-                // Create rooms management window
-                createRoomsManagementWindow();
-                
-                // Play sound
-                playSound('window-open');
-            }
-            
-            // Delete a saved inspection
-            function deleteInspection(inspectionId) {
-                // Find the inspection index
-                const inspectionIndex = state.savedInspections.findIndex(inspection => inspection.id === inspectionId);
-                
-                if (inspectionIndex !== -1) {
-                    // Remove the inspection
-                    state.savedInspections.splice(inspectionIndex, 1);
-                    
-                    // Save to localStorage
-                    saveStateToLocalStorage();
-                    
-                    // Update the saved reports list
-                    document.getElementById('saved-reports-list').innerHTML = renderSavedReportsList();
-                    
-                    // Play sound
-                    playSound('trash');
-                }
-            }
-            
-            // Export the inspection to PDF
-            function exportToPDF() {
-                if (!state.currentInspection) return;
-                
-                // Create a new window for the PDF content
-                const pdfWindowId = `window-pdf-${state.nextWindowId++}`;
-                const pdfWindowHtml = `
-                    <div id="${pdfWindowId}" class="window" style="top: 50px; left: 50px; width: 800px; height: 600px;">
-                        <div class="window-header">
-                            <div class="window-title">Generating PDF...</div>
-                            <div class="window-controls">
-                                <div class="window-control window-close" data-window="${pdfWindowId}"></div>
-                            </div>
-                        </div>
-                        <div class="window-content">
-                            <div id="pdf-content" style="padding: 20px; background-color: white;">
-                                <div style="text-align: center; margin-bottom: 20px;">
-                                    <h1 style="color: #3b82f6;">InspectSpace</h1>
-                                    <h2>Property Inspection Report</h2>
-                                </div>
-                                
-                                <div style="margin-bottom: 30px;">
-                                    <h3>Property Details</h3>
-                                    <p><strong>Address:</strong> ${state.currentInspection.propertyAddress}</p>
-                                    <p><strong>Inspection Date:</strong> ${new Date(state.currentInspection.date).toLocaleDateString()}</p>
-                                    <p><strong>Agent:</strong> ${state.currentInspection.agentName}</p>
-                                    <p><strong>Tenant:</strong> ${state.currentInspection.tenantName}</p>
-                                </div>
-                                
-                                <div style="margin-bottom: 30px;">
-                                    <h3>Room Inspections</h3>
-                                    ${state.currentInspection.rooms.map(room => `
-                                        <div style="margin-bottom: 20px; padding: 10px; border: 1px solid #d1d5db; border-radius: 5px; ${room.urgent ? 'border-left: 5px solid #ef4444;' : ''}">
-                                            <h4>${room.name} ${room.urgent ? '<span style="color: #ef4444;">(URGENT)</span>' : ''}</h4>
-                                            <p><strong>Condition:</strong> ${room.condition}/10</p>
-                                            <p><strong>Notes:</strong> ${room.notes || 'No notes provided.'}</p>
-                                            
-                                            ${room.photos.length > 0 ? `
-                                                <div>
-                                                    <p><strong>Photos:</strong></p>
-                                                    <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px;">
-                                                        ${room.photos.map(photo => `
-                                                            <img src="${photo.data}" alt="${photo.name}" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
-                                                        `).join('')}
-                                                    </div>
-                                                </div>
-                                            ` : '<p><strong>Photos:</strong> No photos provided.</p>'}
-                                        </div>
-                                    `).join('')}
-                                </div>
-                                
-                                <div style="margin-bottom: 30px;">
-                                    <h3>Signatures</h3>
-                                    <div style="display: flex; flex-wrap: wrap; gap: 20px;">
-                                        <div style="flex: 1; min-width: 300px;">
-                                            <p><strong>Tenant Signature:</strong></p>
-                                            ${state.currentInspection.tenantSignature ? `
-                                                <img src="${state.currentInspection.tenantSignature}" alt="Tenant Signature" style="max-width: 100%; border: 1px solid #d1d5db; border-radius: 5px;">
-                                            ` : '<p>No signature provided.</p>'}
-                                        </div>
-                                        
-                                        <div style="flex: 1; min-width: 300px;">
-                                            <p><strong>Agent Signature:</strong></p>
-                                            ${state.currentInspection.agentSignature ? `
-                                                <img src="${state.currentInspection.agentSignature}" alt="Agent Signature" style="max-width: 100%; border: 1px solid #d1d5db; border-radius: 5px;">
-                                            ` : '<p>No signature provided.</p>'}
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <div style="text-align: center; margin-top: 50px; color: #6b7280; font-size: 0.8rem;">
-                                    <p>Generated by InspectSpace - ${new Date().toLocaleDateString()}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                `;
-                
-                elements.desktop.insertAdjacentHTML('beforeend', pdfWindowHtml);
-                
-                // Add window to state and bring to front
-                state.windows.push(pdfWindowId);
-                bringWindowToFront(pdfWindowId);
-                
-                // Set up event listener for the close button
-                document.querySelector(`#${pdfWindowId} .window-close`).addEventListener('click', () => closeWindow(pdfWindowId));
-                
-                // Generate the PDF
-                setTimeout(() => {
-                    const element = document.getElementById('pdf-content');
-                    const opt = {
-                        margin: 10,
-                        filename: `InspectSpace_${state.currentInspection.propertyAddress.replace(/[^a-z0-9]/gi, '_')}_${new Date().toISOString().split('T')[0]}.pdf`,
-                        image: { type: 'jpeg', quality: 0.98 },
-                        html2canvas: { scale: 2 },
-                        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-                    };
-                    
-                    html2pdf().set(opt).from(element).save();
-                    
-                    // Update window title
-                    document.querySelector(`#${pdfWindowId} .window-title`).textContent = 'PDF Generated';
-                    
-                    // Play sound
-                    playSound('success');
-                }, 1000);
-            }
-            
-            // Return to home screen
-            function returnToHome() {
-                // Close all windows
-                closeAllWindows();
-                
-                // Switch to start screen
-                elements.mainInterface.classList.remove('active');
-                elements.startScreen.classList.add('active');
-                
-                // Clear current inspection
-                state.currentInspection = null;
-                
-                // Play sound
-                playSound('back');
-            }
-            
-            // Toggle settings panel
-            function toggleSettingsPanel() {
-                elements.settingsPanel.classList.toggle('active');
-                
-                // Play sound
-                playSound('click');
-            }
-            
-            // Toggle dark mode
-            function toggleDarkMode() {
-                state.darkMode = !state.darkMode;
-                document.getElementById('dark-mode-toggle').classList.toggle('active', state.darkMode);
-                document.body.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
-                
-                // Save to localStorage
-                saveStateToLocalStorage();
-                
-                // Play sound
-                playSound('click');
-            }
-            
-            // Toggle high contrast
-            function toggleHighContrast() {
-                state.highContrast = !state.highContrast;
-                document.getElementById('high-contrast-toggle').classList.toggle('active', state.highContrast);
-                document.body.classList.toggle('high-contrast', state.highContrast);
-                
-                // Save to localStorage
-                saveStateToLocalStorage();
-                
-                // Play sound
-                playSound('click');
-            }
-            
-            // Decrease font size
-            function decreaseFontSize() {
-                if (state.fontSize > 1) {
-                    document.body.classList.remove(`font-size-${state.fontSize}`);
-                    state.fontSize--;
-                    document.body.classList.add(`font-size-${state.fontSize}`);
-                    
-                    // Save to localStorage
-                    saveStateToLocalStorage();
-                    
-                    // Play sound
-                    playSound('click');
-                }
-            }
-            
-            // Reset font size
-            function resetFontSize() {
-                document.body.classList.remove(`font-size-${state.fontSize}`);
-                state.fontSize = 2;
-                document.body.classList.add(`font-size-${state.fontSize}`);
-                
-                // Save to localStorage
-                saveStateToLocalStorage();
-                
-                // Play sound
-                playSound('click');
-            }
-            
-            // Increase font size
-            function increaseFontSize() {
-                if (state.fontSize < 3) {
-                    document.body.classList.remove(`font-size-${state.fontSize}`);
-                    state.fontSize++;
-                    document.body.classList.add(`font-size-${state.fontSize}`);
-                    
-                    // Save to localStorage
-                    saveStateToLocalStorage();
-                    
-                    // Play sound
-                    playSound('click');
-                }
-            }
-            
-            // Load default rooms
-            function loadDefaultRooms() {
-                if (!state.currentInspection) return;
-                
-                // Default room templates
-                const defaultRooms = [
-                    { name: 'Kitchen', condition: 5, notes: '', photos: [], urgent: false },
-                    { name: 'Living Room', condition: 5, notes: '', photos: [], urgent: false },
-                    { name: 'Bedroom 1', condition: 5, notes: '', photos: [], urgent: false },
-                    { name: 'Bedroom 2', condition: 5, notes: '', photos: [], urgent: false },
-                    { name: 'Bathroom', condition: 5, notes: '', photos: [], urgent: false },
-                    { name: 'Hallway', condition: 5, notes: '', photos: [], urgent: false },
-                    { name: 'Garden', condition: 5, notes: '', photos: [], urgent: false }
-                ];
-                
-                // Add default rooms to current inspection
-                defaultRooms.forEach(room => {
-                    // Skip if a room with this name already exists
-                    if (state.currentInspection.rooms.some(r => r.name === room.name)) return;
-                    
-                    state.currentInspection.rooms.push({
-                        id: generateId(),
-                        ...room
-                    });
-                });
-                
-                // Update the rooms list
-                const roomList = document.getElementById('room-list');
-                if (roomList) {
-                    roomList.innerHTML = renderRoomsList();
-                }
-                
-                // Toggle settings panel
-                toggleSettingsPanel();
-                
-                // Play sound
-                playSound('success');
-            }
-            
-            // Window management functions
-            function closeWindow(windowId) {
-                const window = document.getElementById(windowId);
-                if (!window) return;
-                
-                // Animate window closing
-                window.classList.add('animate-pop');
-                window.style.opacity = 0;
-                window.style.transform = 'scale(0.9)';
-                
-                // Remove from DOM after animation
-                setTimeout(() => {
-                    window.remove();
-                    
-                    // Remove from state
-                    const windowIndex = state.windows.indexOf(windowId);
-                    if (windowIndex !== -1) {
-                        state.windows.splice(windowIndex, 1);
-                    }
-                }, 300);
-                
-                // Play sound
-                playSound('window-close');
-            }
-            
-            function minimizeWindow(windowId) {
-                const window = document.getElementById(windowId);
-                if (!window) return;
-                
-                // Toggle the minimized state
-                window.classList.toggle('minimized');
-                
-                if (window.classList.contains('minimized')) {
-                    // Save the current size and position
-                    window.setAttribute('data-prev-height', window.style.height || 'auto');
-                    window.setAttribute('data-prev-width', window.style.width || 'auto');
-                    window.setAttribute('data-prev-top', window.style.top || '0');
-                    window.setAttribute('data-prev-left', window.style.left || '0');
-                    
-                    // Minimize
-                    window.style.height = '40px';
-                    window.style.width = '200px';
-                    window.style.top = 'calc(100% - 50px)';
-                    window.style.left = `${state.windows.indexOf(windowId) * 210}px`;
-                    
-                    // Hide content
-                    window.querySelector('.window-content').style.display = 'none';
-                } else {
-                    // Restore
-                    window.style.height = window.getAttribute('data-prev-height');
-                    window.style.width = window.getAttribute('data-prev-width');
-                    window.style.top = window.getAttribute('data-prev-top');
-                    window.style.left = window.getAttribute('data-prev-left');
-                    
-                    // Show content
-                    window.querySelector('.window-content').style.display = 'block';
-                }
-                
-                // Play sound
-                playSound('click');
-            }
-            
-            function maximizeWindow(windowId) {
-                const window = document.getElementById(windowId);
-                if (!window) return;
-                
-                // Toggle the maximized state
-                window.classList.toggle('maximized');
-                
-                if (window.classList.contains('maximized')) {
-                    // Save the current size and position
-                    window.setAttribute('data-prev-height', window.style.height || 'auto');
-                    window.setAttribute('data-prev-width', window.style.width || 'auto');
-                    window.setAttribute('data-prev-top', window.style.top || '0');
-                    window.setAttribute('data-prev-left', window.style.left || '0');
-                    
-                    // Maximize
-                    window.style.height = 'calc(100% - 50px)';
-                    window.style.width = '100%';
-                    window.style.top = '0';
-                    window.style.left = '0';
-                } else {
-                    // Restore
-                    window.style.height = window.getAttribute('data-
+            // Play sound
+            playSound('success');
+          });
+        }, 1000);
+      }
+      
+      // Return to home screen
+      function returnToHome() {
+        closeAllWindows();
+        elements.mainInterface.classList.remove('active');
+        elements.startScreen.classList.add('active');
+        state.currentInspection = null;
+        
+        playSound('back');
+      }
+      
+      // Toggle settings panel
+      function toggleSettingsPanel() {
+        elements.settingsPanel.classList.toggle('active');
+        playSound('click');
+      }
+      
+      // Toggle dark mode
+      function toggleDarkMode() {
+        state.darkMode = !state.darkMode;
+        document.getElementById('dark-mode-toggle').classList.toggle('active', state.darkMode);
+        document.body.setAttribute('data-theme', state.darkMode ? 'dark' : 'light');
+        saveStateToLocalStorage();
+        playSound('click');
+      }
+      
+      // Toggle high contrast
+      function toggleHighContrast() {
+        state.highContrast = !state.highContrast;
+        document.getElementById('high-contrast-toggle').classList.toggle('active', state.highContrast);
+        document.body.classList.toggle('high-contrast', state.highContrast);
+        saveStateToLocalStorage();
+        playSound('click');
+      }
+      
+      // Decrease font size
+      function decreaseFontSize() {
+        if (state.fontSize > 1) {
+          document.body.classList.remove(`font-size-${state.fontSize}`);
+          state.fontSize--;
+          document.body.classList.add(`font-size-${state.fontSize}`);
+          saveStateToLocalStorage();
+          playSound('click');
+        }
+      }
+      
+      // Reset font size
+      function resetFontSize() {
+        document.body.classList.remove(`font-size-${state.fontSize}`);
+        state.fontSize = 2;
+        document.body.classList.add(`font-size-${state.fontSize}`);
+        saveStateToLocalStorage();
+        playSound('click');
+      }
+      
+      // Increase font size
+      function increaseFontSize() {
+        if (state.fontSize < 3) {
+          document.body.classList.remove(`font-size-${state.fontSize}`);
+          state.fontSize++;
+          document.body.classList.add(`font-size-${state.fontSize}`);
+          saveStateToLocalStorage();
+          playSound('click');
+        }
+      }
+      
+      // Load default rooms
+      function loadDefaultRooms() {
+        if (!state.currentInspection) return;
+        
+        const defaultRooms = [
+          { name: 'Kitchen', condition: 5, notes: '', photos: [], urgent: false },
+          { name: 'Living Room', condition: 5, notes: '', photos: [], urgent: false },
+          { name: 'Bedroom 1', condition: 5, notes: '', photos: [], urgent: false },
+          { name: 'Bedroom 2', condition: 5, notes: '', photos: [], urgent: false },
+          { name: 'Bathroom', condition: 5, notes: '', photos: [], urgent: false },
+          { name: 'Hallway', condition: 5, notes: '', photos: [], urgent: false },
+          { name: 'Garden', condition: 5, notes: '', photos: [], urgent: false }
+        ];
+        
+        defaultRooms.forEach(room => {
+          // Skip if this room name already exists
+          if (!state.currentInspection.rooms.some(r => r.name === room.name)) {
+            state.currentInspection.rooms.push({
+              id: generateId(),
+              ...room
+            });
+          }
+        });
+        
+        // Update rooms list
+        const roomList = document.getElementById('room-list');
+        if (roomList) {
+          roomList.innerHTML = renderRoomsList();
+        }
+        
+        // Close settings panel
+        toggleSettingsPanel();
+        
+        playSound('success');
+      }
+      
+      /* ============================
+         WINDOW MANAGEMENT FUNCTIONS
+      ============================ */
+      function closeWindow(windowId) {
+        const win = document.getElementById(windowId);
+        if (!win) return;
+        
+        // Animate close
+        win.classList.add('animate-pop');
+        win.style.opacity = 0;
+        win.style.transform = 'scale(0.9)';
+        
+        setTimeout(() => {
+          win.remove();
+          const idx = state.windows.indexOf(windowId);
+          if (idx !== -1) {
+            state.windows.splice(idx, 1);
+          }
+        }, 300);
+        
+        playSound('window-close');
+      }
+      
+      function minimizeWindow(windowId) {
+        const win = document.getElementById(windowId);
+        if (!win) return;
+        
+        win.classList.toggle('minimized');
+        if (win.classList.contains('minimized')) {
+          // Save current size/position
+          win.setAttribute('data-prev-height', win.style.height || 'auto');
+          win.setAttribute('data-prev-width', win.style.width || 'auto');
+          win.setAttribute('data-prev-top', win.style.top || '0');
+          win.setAttribute('data-prev-left', win.style.left || '0');
+          
+          // Minimize
+          win.style.height = '40px';
+          win.style.width = '200px';
+          win.style.top = 'calc(100% - 50px)';
+          const offset = state.windows.indexOf(windowId) * 210;
+          win.style.left = `${offset}px`;
+          
+          // Hide content
+          const content = win.querySelector('.window-content');
+          if (content) content.style.display = 'none';
+        } else {
+          // Restore
+          win.style.height = win.getAttribute('data-prev-height');
+          win.style.width = win.getAttribute('data-prev-width');
+          win.style.top = win.getAttribute('data-prev-top');
+          win.style.left = win.getAttribute('data-prev-left');
+          const content = win.querySelector('.window-content');
+          if (content) content.style.display = 'block';
+        }
+        
+        playSound('click');
+      }
+      
+      function maximizeWindow(windowId) {
+        const win = document.getElementById(windowId);
+        if (!win) return;
+        
+        win.classList.toggle('maximized');
+        if (win.classList.contains('maximized')) {
+          // Save current size/position
+          win.setAttribute('data-prev-height', win.style.height || 'auto');
+          win.setAttribute('data-prev-width', win.style.width || 'auto');
+          win.setAttribute('data-prev-top', win.style.top || '0');
+          win.setAttribute('data-prev-left', win.style.left || '0');
+          
+          // Maximize
+          win.style.height = 'calc(100% - 50px)';
+          win.style.width = '100%';
+          win.style.top = '0';
+          win.style.left = '0';
+        } else {
+          // Restore
+          win.style.height = win.getAttribute('data-prev-height');
+          win.style.width = win.getAttribute('data-prev-width');
+          win.style.top = win.getAttribute('data-prev-top');
+          win.style.left = win.getAttribute('data-prev-left');
+        }
+        
+        playSound('click');
+      }
+      
+      function closeAllWindows() {
+        // Copy the array (since closeWindow modifies it)
+        const allWindows = [...state.windows];
+        allWindows.forEach(winId => closeWindow(winId));
+      }
+      
+      function bringWindowToFront(windowId) {
+        const win = document.getElementById(windowId);
+        if (!win) return;
+        
+        state.zIndex += 1;
+        win.style.zIndex = state.zIndex;
+        
+        // Also ensure .active style for "top" window
+        // Could remove active from others if you want only one active at a time
+        state.windows.forEach(id => {
+          const w = document.getElementById(id);
+          if (w) w.classList.remove('active');
+        });
+        win.classList.add('active');
+      }
+      
+      /* ============================
+         HELPER FUNCTIONS
+      ============================ */
+      function generateId() {
+        return '_' + Math.random().toString(36).substr(2, 9);
+      }
+      
+      // Basic placeholder for sound feedback
+      function playSound(type) {
+        // If you want actual sounds, you can embed <audio> elements or use beep noises.
+        // For now, just log to console or do nothing.
+        // console.log(`Playing sound: ${type}`);
+      }
+      
+      // Start everything
+      init();
+    });
+  </script>
+</body>
+</html>
